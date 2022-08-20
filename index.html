@@ -17,4 +17,10 @@
             </canvas>
         </div>
     </body>
+    <script>
+        // disable right click
+        document.querySelector("#bevy").addEventListener("contextmenu", (event) => {        
+            event.preventDefault();
+        }, false);
+    </script>
 </html>

@@ -1,4 +1,4 @@
-use crate::loading::FontAssets;
+use crate::assets::*;
 use crate::GameState;
 use bevy::prelude::*;
 use iyes_loopless::prelude::*;
@@ -9,7 +9,7 @@ pub struct MenuPlugin;
 /// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<ButtonColors>()
+        app
             
             .add_enter_system(
                 GameState::Menu,
@@ -25,26 +25,14 @@ impl Plugin for MenuPlugin {
     }
 }
 
-struct ButtonColors {
-    normal: UiColor,
-    hovered: UiColor,
-}
 
-impl Default for ButtonColors {
-    fn default() -> Self {
-        ButtonColors {
-            normal: Color::rgb(0.15, 0.15, 0.15).into(),
-            hovered: Color::rgb(0.25, 0.25, 0.25).into(),
-        }
-    }
-}
 
 fn setup_menu(
     mut commands: Commands,
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-    commands.spawn_bundle(Camera2dBundle::default());
+
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {

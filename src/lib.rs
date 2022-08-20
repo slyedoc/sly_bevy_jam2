@@ -1,48 +1,98 @@
 mod actions;
 mod audio;
-mod loading;
-mod menu;
-mod player;
+mod states;
+mod assets;
+mod debug_overlay;
+mod camera_controller;
 
+//use crate::actions::ActionsPlugin;
+//use crate::audio::InternalAudioPlugin;
+use crate::states::*;
 
-use crate::actions::ActionsPlugin;
-use crate::audio::InternalAudioPlugin;
-use crate::loading::LoadingPlugin;
-use crate::menu::MenuPlugin;
-use crate::player::PlayerPlugin;
-
+use bevy_inspector_egui::prelude::*;
+use camera_controller::{CameraControllerPlugin, CameraController};
+use debug_overlay::DebugOverlayPlugin;
 use iyes_loopless::prelude::*;
 use bevy::app::App;
-#[cfg(debug_assertions)]
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
+use sly_physics::prelude::*;
 
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
-    // During the loading State the LoadingPlugin will load our assets
-    Loading,
-    // During this State the actual game logic is executed
-    Playing,
-    // Here the menu is drawn and waiting for player interaction
+    PreLoading, // loads font for assets
+    Loading, // load rest of the assets
     Menu,
+    Playing,    
 }
+
+// Marker for things to keep around between states
+#[derive(Component)]
+pub struct Keep;
 
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_loopless_state(GameState::Loading)
-            .add_plugin(LoadingPlugin)
-            .add_plugin(MenuPlugin)
-            .add_plugin(ActionsPlugin)
-            .add_plugin(InternalAudioPlugin)
-            .add_plugin(PlayerPlugin);
+        app.add_loopless_state(GameState::PreLoading)
+            .add_plugin(WorldInspectorPlugin::default())
 
-        #[cfg(debug_assertions)]
-        {
-            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin::default());
-        }
+            .add_plugin(CameraControllerPlugin)
+            // physics plugins 
+            .add_plugin(PhysicsPlugin)
+            .add_plugin(GravityPlugin)
+            .add_plugin(PhysicsDebugPlugin)
+            .add_plugin(PhysicsBvhCameraPlugin)
+
+            // local plugins                       
+            //.add_plugin(ActionsPlugin)
+            //.add_plugin(InternalAudioPlugin)
+            
+            // game states
+            .add_plugin(StatePlugin)
+            // for debugging
+            .add_plugin(DebugOverlayPlugin)
+            .add_startup_system(setup_clearcolor)
+            .add_startup_system(setup_cameras);
+            
+
+
+        // #[cfg(debug_assertions)]
+        // {   
+        //     app
+        //     .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin)
+        //     .add_plugin(bevy::diagnostic::LogDiagnosticsPlugin::default());
+        // }
     }
+}
+
+fn setup_clearcolor(
+    mut clear_color: ResMut<ClearColor>,
+) {
+    clear_color.0 = Color::BLACK;
+}
+
+
+
+
+fn cleanup(mut commands: Commands, q: Query<Entity, Without<Keep>>) {
+    for e in q.iter() {
+        commands.entity(e).despawn_recursive();
+    }
+}
+
+fn setup_cameras(mut commands: Commands) {
+    // cameras
+    // commands
+    //     .spawn_bundle(Camera2dBundle::default())
+    //     .insert(Keep);
+
+    commands
+        .spawn_bundle(Camera3dBundle {
+            transform: Transform::from_xyz(0.0, 2.0, -10.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..default()
+        })
+        .insert(CameraController::default())
+        .insert(BvhCamera::new(256, 256)) // only used for physics debug
+        .insert(Keep);
 }
