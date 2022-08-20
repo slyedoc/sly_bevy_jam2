@@ -80,8 +80,8 @@ fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
             text: Text {
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
-                    font_assets.h1("FPS: ", Color::WHITE),
-                    font_assets.h1("", Color::WHITE),
+                    font_assets.h1("FPS: ".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::GREEN),
                 ],
                 ..Default::default()
             },
@@ -110,8 +110,8 @@ fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
             text: Text {
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
-                    font_assets.h1("Physics State: ", Color::WHITE),
-                    font_assets.h1("", Color::WHITE),
+                    font_assets.h1("Physics State: ".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::GREEN),
                 ],
                 ..Default::default()
             },
@@ -140,8 +140,8 @@ fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
             text: Text {
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
-                    font_assets.h1("Game State: ", Color::WHITE),
-                    font_assets.h1("", Color::WHITE),
+                    font_assets.h1("Game State: ".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::GREEN),
                 ],
                 ..Default::default()
             },

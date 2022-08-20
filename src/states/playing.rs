@@ -7,25 +7,33 @@ use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 use std::f32::consts::*;
 
+
 pub struct PlayingPlugin;
 
-/// This plugin handles player related stuff like movement
-/// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
         app.add_enter_system(GameState::Playing, spawn_room)
-            .add_enter_system(GameState::Playing, setup_exit_button)
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(GameState::Playing)
-                    .with_system(exit_state)
-                    .into(),
-            )
+            .add_enter_system(GameState::Playing, setup_buttons)
+            .add_system(hotkeys.run_in_state(GameState::Playing))
+            .add_system(click_button.run_in_state(GameState::Playing))
             .add_exit_system(GameState::Playing, cleanup);
     }
 }
 
-fn setup_exit_button(
+#[derive(Component, Copy, Clone)]
+enum PlayingButton {
+    Exit,    
+}
+
+impl Into<String> for PlayingButton {
+    fn into(self) -> String {
+        match self {
+            PlayingButton::Exit => "Exit".to_string(),            
+        }
+    }
+}
+
+fn setup_buttons(
     mut commands: Commands,
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
@@ -51,17 +59,32 @@ fn setup_exit_button(
         .with_children(|parent| {
             parent.spawn_bundle(TextBundle {
                 text: Text {
-                    sections: vec![font_assets.h1("Exit", Color::rgb(0.9, 0.9, 0.9))],
+                    sections: vec![font_assets.h1( PlayingButton::Exit.into(), Color::rgb(0.9, 0.9, 0.9))],
                     alignment: Default::default(),
                 },
                 ..Default::default()
             });
-        });
+        })
+        .insert(PlayingButton::Exit);
 }
 
-pub fn exit_state(mut commands: Commands, input: Res<Input<KeyCode>>) {
+pub fn hotkeys(mut commands: Commands, input: Res<Input<KeyCode>>) {
     if input.just_pressed(KeyCode::Escape) {
         commands.insert_resource(NextState(GameState::Menu));
+    }
+}
+
+#[allow(clippy::type_complexity)]
+fn click_button(
+    mut commands: Commands,
+    interaction_query: Query<(&Interaction, &PlayingButton), (Changed<Interaction>, With<Button>)>,
+) {
+    for (interaction, btn) in interaction_query.iter() {
+        if *interaction == Interaction::Clicked {
+            match btn {
+                PlayingButton::Exit => commands.insert_resource(NextState(GameState::Menu)),
+            }
+        }
     }
 }
 
@@ -85,6 +108,7 @@ pub fn spawn_room(
     let wall_height = 10.0;
     let floor_half = floor_size * 0.5;
     let wall_height_half = wall_height * 0.5;
+
     // floor
     commands
         .spawn_bundle(PbrBundle {

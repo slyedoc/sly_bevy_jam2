@@ -57,8 +57,8 @@ fn setup(
                 },
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
-                    font_assets.h1("Loading...", Color::WHITE),
-                    font_assets.h1("", Color::WHITE),
+                    font_assets.h1("Loading".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::WHITE),
                 ],
             },
             ..Default::default()

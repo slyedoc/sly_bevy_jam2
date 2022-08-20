@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
+pub const CLEAR: Color = Color::rgba(0.0, 0.0, 0.0, 0.0);
+
 pub struct ButtonColors {
     pub normal: UiColor,
     pub hovered: UiColor,
@@ -23,9 +25,9 @@ pub struct FontAssets {
 }
 
 impl FontAssets {
-    pub fn h1(&self, text: impl Into<String>, color: Color) -> TextSection {
+    pub fn h1(&self, text: String, color: Color) -> TextSection {
         TextSection {
-            value: text.into(),
+            value: text,
             style: TextStyle {
                 font: self.fira_sans.clone(),
                 font_size: 30.0,
