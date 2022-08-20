@@ -1,7 +1,7 @@
 // from personal crate, copied it here since I will be changing it
 
 #![allow(clippy::type_complexity)]
-use std::f32::consts::{FRAC_PI_2};
+use std::f32::consts::FRAC_PI_2;
 
 use bevy::{
     input::{mouse::MouseMotion, Input},
@@ -13,7 +13,7 @@ pub struct CameraControllerPlugin;
 
 impl Plugin for CameraControllerPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system_to_stage( CoreStage::PostUpdate, update_camera_controller);
+        app.add_system_to_stage(CoreStage::PostUpdate, update_camera_controller);
     }
 }
 
@@ -54,7 +54,7 @@ impl Default for CameraController {
             run_speed: 30.0,
             friction: 0.3,
             pitch: 0.0,
-            yaw:  0.0,
+            yaw: 0.0,
             velocity: Vec3::ZERO,
         }
     }
@@ -74,7 +74,7 @@ fn update_camera_controller(
             if !controller.enabled {
                 continue;
             }
-    
+
             // Handle key input
             let mut axis_input = Vec3::ZERO;
             if key_input.pressed(controller.key_forward) {
@@ -95,7 +95,7 @@ fn update_camera_controller(
             if key_input.pressed(controller.key_down) {
                 axis_input.y -= 1.0;
             }
-    
+
             // Apply movement update
             if axis_input != Vec3::ZERO {
                 let max_speed = if key_input.pressed(controller.key_run) {
@@ -116,16 +116,16 @@ fn update_camera_controller(
             transform.translation += controller.velocity.x * dt * right
                 + controller.velocity.y * dt * Vec3::Y
                 + controller.velocity.z * dt * forward;
-    
+
             // Handle mouse look on mouse button
             let mut mouse_delta = Vec2::ZERO;
             if mouse_input.pressed(controller.mouse_look) {
-                #[cfg(not(target="wasm32"))]
+                #[cfg(not(target = "wasm32"))]
                 window.set_cursor_lock_mode(true);
                 window.set_cursor_visibility(false);
             }
             if mouse_input.just_released(controller.mouse_look) {
-                #[cfg(not(target="wasm32"))]
+                #[cfg(not(target = "wasm32"))]
                 window.set_cursor_lock_mode(false);
                 window.set_cursor_visibility(true);
             }
@@ -134,15 +134,14 @@ fn update_camera_controller(
                     mouse_delta += mouse_event.delta;
                 }
             }
-    
-            if mouse_delta != Vec2::ZERO {           
-                let (mut yaw, mut pitch, _roll) =  transform.rotation.to_euler(EulerRot::YXZ);
+
+            if mouse_delta != Vec2::ZERO {
+                let (mut yaw, mut pitch, _roll) = transform.rotation.to_euler(EulerRot::YXZ);
                 yaw -= mouse_delta.x * controller.sensitivity * time.delta_seconds();
                 pitch -= mouse_delta.y * controller.sensitivity * time.delta_seconds();
 
                 let pitch = pitch.clamp(-FRAC_PI_2, FRAC_PI_2);
                 transform.rotation = Quat::from_euler(EulerRot::YXZ, yaw, pitch, 0.0)
-                                
             }
         }
     }

@@ -11,22 +11,21 @@ impl Plugin for LoadingPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ButtonColors>()
             .add_loading_state(
-            LoadingState::new(GameState::Loading)
-                .with_collection::<AudioAssets>()
-                .with_collection::<TextureAssets>()
-                .continue_to_state(GameState::Menu),
-        )
-        .add_enter_system(GameState::Loading, setup)
-        .add_stage_before(
-            CoreStage::Update,
-            "loading_update",
-            FixedTimestepStage::new(Duration::from_secs_f64(0.5))
-                .with_stage(SystemStage::parallel().with_system(update_text)),
-        )
-        .add_exit_system(GameState::Loading, cleanup);
+                LoadingState::new(GameState::Loading)
+                    .with_collection::<AudioAssets>()
+                    .with_collection::<TextureAssets>()
+                    .continue_to_state(GameState::Menu),
+            )
+            .add_enter_system(GameState::Loading, setup)
+            .add_stage_before(
+                CoreStage::Update,
+                "loading_update",
+                FixedTimestepStage::new(Duration::from_secs_f64(0.5))
+                    .with_stage(SystemStage::parallel().with_system(update_text)),
+            )
+            .add_exit_system(GameState::Loading, cleanup);
     }
 }
-
 
 #[derive(Component)]
 struct LoadingText;
@@ -59,7 +58,7 @@ fn setup(
                 // Construct a `Vec` of `TextSection`s
                 sections: vec![
                     font_assets.h1("Loading...", Color::WHITE),
-                    font_assets.h1("", Color::WHITE),                    
+                    font_assets.h1("", Color::WHITE),
                 ],
             },
             ..Default::default()

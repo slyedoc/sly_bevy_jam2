@@ -11,23 +11,23 @@ pub struct InternalAudioPlugin;
 impl Plugin for InternalAudioPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(AudioPlugin)
-        
-            .add_enter_system(
-                GameState::Playing,
-                start_audio
-            )
+            .add_enter_system(GameState::Playing, start_audio)
             .add_system_set(
                 ConditionSet::new()
-                .run_in_state(GameState::Playing)
-                .with_system(control_flying_sound)
-                .into(),                    
+                    .run_in_state(GameState::Playing)
+                    .with_system(control_flying_sound)
+                    .into(),
             );
     }
 }
 
 struct FlyingAudio(Handle<AudioInstance>);
 
-fn start_audio(mut commands: Commands, audio_assets: Res<AudioAssets>, audio: Res<bevy_kira_audio::Audio>) {
+fn start_audio(
+    mut commands: Commands,
+    audio_assets: Res<AudioAssets>,
+    audio: Res<bevy_kira_audio::Audio>,
+) {
     audio.pause();
     let handle = audio
         .play(audio_assets.flying.clone())

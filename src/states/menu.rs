@@ -9,30 +9,22 @@ pub struct MenuPlugin;
 /// The menu is only drawn during the State `GameState::Menu` and is removed when that state is exited
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app
-            
-            .add_enter_system(
-                GameState::Menu,
-                setup_menu
-            )
+        app.add_enter_system(GameState::Menu, setup_menu)
             .add_system_set(
                 ConditionSet::new()
-                .run_in_state(GameState::Menu)
-                .with_system(click_play_button)
-                .into(),
-            )            
+                    .run_in_state(GameState::Menu)
+                    .with_system(click_play_button)
+                    .into(),
+            )
             .add_exit_system(GameState::Menu, cleanup_menu);
     }
 }
-
-
 
 fn setup_menu(
     mut commands: Commands,
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -63,9 +55,10 @@ fn setup_menu(
         });
 }
 
+#[allow(clippy::type_complexity)]
 fn click_play_button(
     mut commands: Commands,
-    button_colors: Res<ButtonColors>,    
+    button_colors: Res<ButtonColors>,
     mut interaction_query: Query<
         (&Interaction, &mut UiColor),
         (Changed<Interaction>, With<Button>),
@@ -74,7 +67,7 @@ fn click_play_button(
     for (interaction, mut color) in &mut interaction_query {
         match *interaction {
             Interaction::Clicked => {
-                commands.insert_resource(NextState(GameState::Playing));                
+                commands.insert_resource(NextState(GameState::Playing));
             }
             Interaction::Hovered => {
                 *color = button_colors.hovered;

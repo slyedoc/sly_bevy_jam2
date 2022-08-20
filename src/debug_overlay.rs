@@ -7,7 +7,6 @@ use sly_physics::prelude::*;
 
 use crate::{assets::FontAssets, GameState, Keep};
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum DebugOverlayState {
     Running,
@@ -32,7 +31,7 @@ impl Plugin for DebugOverlayPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default())
             .add_loopless_state(DebugOverlayState::Paused)
-            .add_system(toggle_debug_overlay)            
+            .add_system(toggle_debug_overlay)
             .add_enter_system(DebugOverlayState::Running, setup_overlay)
             .add_system(update_fps)
             .add_system(update_state)
@@ -41,10 +40,9 @@ impl Plugin for DebugOverlayPlugin {
     }
 }
 
-
 fn toggle_debug_overlay(
     mut commands: Commands,
-    input: Res<Input<KeyCode>>,    
+    input: Res<Input<KeyCode>>,
     overlay_state: Res<CurrentState<DebugOverlayState>>,
 ) {
     if input.just_pressed(KeyCode::Key1) {
@@ -56,17 +54,11 @@ fn toggle_debug_overlay(
     }
 }
 
-
-fn despawn_overlay(
-    mut commands: Commands,
-    query: Query<Entity, With<DebugOverlay>>,
-) {
+fn despawn_overlay(mut commands: Commands, query: Query<Entity, With<DebugOverlay>>) {
     for e in query.iter() {
         commands.entity(e).despawn_recursive();
     }
 }
-
-
 
 fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
     let mut offset = 10.0;
