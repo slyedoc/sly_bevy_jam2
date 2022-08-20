@@ -2,6 +2,7 @@ use crate::actions::Actions;
 use crate::loading::TextureAssets;
 use crate::GameState;
 use bevy::prelude::*;
+use iyes_loopless::prelude::*;
 
 pub struct PlayerPlugin;
 
@@ -12,8 +13,13 @@ pub struct Player;
 /// Player logic is only active during the State `GameState::Playing`
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(spawn_player))
-            .add_system_set(SystemSet::on_update(GameState::Playing).with_system(move_player));
+        app.add_enter_system(GameState::Playing, spawn_player)
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(GameState::Playing)
+                    .with_system(move_player)
+                    .into(),
+            );
     }
 }
 
