@@ -3,10 +3,11 @@
 #![allow(dead_code)] 
 
 mod assets;
-mod audio;
 mod camera_controller;
 mod debug_overlay;
 mod states;
+mod characters;
+mod cursor;
 
 //use crate::actions::ActionsPlugin;
 //use crate::audio::InternalAudioPlugin;
@@ -16,7 +17,9 @@ use assets::ButtonColors;
 use bevy::app::App;
 use bevy::prelude::*;
 use bevy_inspector_egui::prelude::*;
+use bevy_kira_audio::AudioPlugin;
 use camera_controller::{CameraController, CameraControllerPlugin};
+use cursor::CursorPlugin;
 use debug_overlay::DebugOverlayPlugin;
 use iyes_loopless::prelude::*;
 use bevy_tweening::TweeningPlugin;
@@ -41,6 +44,7 @@ impl Plugin for GamePlugin {
         app.add_loopless_state(GameState::PreLoading)
             .add_plugin(WorldInspectorPlugin::default())
             .add_plugin(TweeningPlugin)
+            .add_plugin(AudioPlugin)
             // physics plugins
             .add_plugin(PhysicsPlugin)
             .add_plugin(GravityPlugin)
@@ -48,6 +52,7 @@ impl Plugin for GamePlugin {
             .add_plugin(PhysicsBvhCameraPlugin)
             // local plugins
             .add_plugin(CameraControllerPlugin)
+            .add_plugin(CursorPlugin)
             //.add_plugin(ActionsPlugin)
             //.add_plugin(InternalAudioPlugin)
             

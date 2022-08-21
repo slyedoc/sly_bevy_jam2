@@ -1,4 +1,5 @@
 use crate::assets::*;
+use crate::characters::*;
 use crate::{cleanup, GameState};
 
 use bevy::math::vec3;
@@ -13,6 +14,7 @@ pub struct PlayingPlugin;
 impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
         app.add_enter_system(GameState::Playing, spawn_room)
+            .add_enter_system(GameState::Playing, spawn_nexus)
             .add_enter_system(GameState::Playing, setup_buttons)
             .add_system(hotkeys.run_in_state(GameState::Playing))
             .add_system(click_button.run_in_state(GameState::Playing))

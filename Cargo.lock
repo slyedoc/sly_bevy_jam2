@@ -3113,7 +3113,6 @@ dependencies = [
 [[package]]
 name = "sly_physics"
 version = "0.1.0"
-source = "git+https://github.com/slyedoc/sly_physics?branch=main#dd17f0576161e237b3cdb6d2458eb560bbf1256f"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
