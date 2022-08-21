@@ -1,8 +1,8 @@
-mod buttons;
 mod audio;
+mod buttons;
 
-use buttons::*;
 use audio::*;
+use buttons::*;
 
 use crate::assets::*;
 use crate::cleanup;
@@ -18,11 +18,10 @@ pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_audio_channel::<MenuBackgroundAudio>()
+        app.add_audio_channel::<MenuBackgroundAudio>()
             .add_enter_system(GameState::Menu, setup_menu)
             .add_enter_system(GameState::Menu, start_audio)
-            .add_system(click_button.run_in_state(GameState::Menu))
+            .add_system(button_click.run_in_state(GameState::Menu))
             .add_exit_system(GameState::Menu, stop_audio)
             .add_exit_system(GameState::Menu, cleanup);
 
@@ -31,12 +30,79 @@ impl Plugin for MenuPlugin {
     }
 }
 
-
 fn setup_menu(
     mut commands: Commands,
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
+
+    // Title Bar
+    commands
+        .spawn_bundle(NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                size: Size::new(Val::Percent(100.0), Val::Percent(20.0)),
+                position: UiRect {
+                    top: Val::Percent(10.0),
+                    ..Default::default()
+                },
+                flex_direction: FlexDirection::ColumnReverse,
+                justify_content: JustifyContent::Center,
+                ..Default::default()
+            },
+            color: CLEAR.into(),
+            ..Default::default()
+        })
+        .insert(Name::new("Title Bar"))
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        align_self: AlignSelf::Center,
+                        ..Default::default()
+                    },
+                    text: Text {
+                        sections: vec![
+                            font_assets.title("TODO".to_string(), Color::GOLD )
+                        ],
+                        alignment: Default::default(),
+                    },
+                    ..Default::default()
+                })
+                .insert(Name::new("Title"));
+
+            // dev tag
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        align_self: AlignSelf::Center,
+                        ..Default::default()
+                    },
+                    color: Color::RED.into(),
+                    ..Default::default()
+                })
+                .insert(Name::new("Dev Tag"))
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(TextBundle {
+                            style: Style {
+                                align_self: AlignSelf::Center,
+                                margin: UiRect::all(Val::Px(5.0)),
+                                ..Default::default()
+                            },
+                            text: Text {
+                                sections: vec![
+                                    font_assets.sub_title("for Bevy Game Jam #2".to_string(), Color::WHITE )
+                                ],
+                                alignment: Default::default(),
+                            },
+                            ..default()
+                            
+                        })
+                        .insert(Name::new("Dev"));
+                });
+        });
+
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
@@ -56,6 +122,7 @@ fn setup_menu(
             ..Default::default()
         })
         .with_children(|parent| {
+            
             for b in MenuButton::iter() {
                 parent
                     .spawn_bundle(ButtonBundle {
@@ -81,23 +148,6 @@ fn setup_menu(
                     .insert(b);
             }
         });
-}
-
-#[allow(clippy::type_complexity)]
-fn click_button(
-    mut commands: Commands,
-    interaction_query: Query<(&Interaction, &MenuButton), (Changed<Interaction>, With<Button>)>,
-    #[cfg(not(target_arch = "wasm32"))] mut app_exit: EventWriter<AppExit>,
-) {
-    for (interaction, btn) in interaction_query.iter() {
-        if *interaction == Interaction::Clicked {
-            match btn {
-                MenuButton::Play => commands.insert_resource(NextState(GameState::Playing)),
-                #[cfg(not(target_arch = "wasm32"))]
-                MenuButton::Exit => app_exit.send(AppExit),
-            }
-        }
-    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]

@@ -2,13 +2,14 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
+use bevy_inspector_egui::{WorldInspectorParams};
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 
-use crate::{assets::FontAssets, GameState, Keep};
+use crate::{assets::FontAssets, GameState, Keep, show_window, cursor::Inspector, hide_window};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
-pub enum DebugOverlayState {
+pub enum Debug {
     Running,
     Paused,
 }
@@ -25,32 +26,60 @@ struct GameStateText;
 #[derive(Component)]
 struct PhysicsStateText;
 
-pub struct DebugOverlayPlugin;
+pub struct DebugPlugin;
 
-impl Plugin for DebugOverlayPlugin {
+impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-            .add_loopless_state(DebugOverlayState::Paused)
-            .add_system(toggle_debug_overlay)
-            .add_enter_system(DebugOverlayState::Running, setup_overlay)
+            .add_loopless_state(Debug::Paused)
+            .add_system(toggle_debug)
+            .add_system(toggle_physics_debug)
+            .add_enter_system(Debug::Running, setup_overlay)
+            .add_enter_system(Debug::Running, show_window::<Inspector>)
             .add_system(update_fps)
             .add_system(update_state)
             .add_system(update_physcis_debug)
-            .add_exit_system(DebugOverlayState::Running, despawn_overlay);
+            .add_exit_system(Debug::Running, despawn_overlay)
+            .add_exit_system(Debug::Running, hide_window::<Inspector>);
     }
 }
 
-fn toggle_debug_overlay(
+fn toggle_debug(
     mut commands: Commands,
     input: Res<Input<KeyCode>>,
-    overlay_state: Res<CurrentState<DebugOverlayState>>,
+    overlay_state: Res<CurrentState<Debug>>,
+    mut world_inspector: ResMut<WorldInspectorParams>,
+
 ) {
-    if input.just_pressed(KeyCode::Key1) {
-        let target = match overlay_state.0 {
-            DebugOverlayState::Paused => DebugOverlayState::Running,
-            DebugOverlayState::Running => DebugOverlayState::Paused,
-        };
-        commands.insert_resource(NextState(target));
+    if input.just_pressed(KeyCode::F1) {
+        match overlay_state.0 {
+            Debug::Paused => {
+                commands.insert_resource(NextState(Debug::Running));                
+                world_inspector.enabled = true;
+            }
+            Debug::Running => {
+                commands.insert_resource(NextState(Debug::Paused));                
+                world_inspector.enabled = false;
+            },
+        }; 
+    }
+}
+
+fn toggle_physics_debug(
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    state: Res<CurrentState<PhysicsDebugState>>,
+) {
+    if input.just_pressed(KeyCode::F2) {
+        match state.0 {
+            PhysicsDebugState::Paused => {
+                commands.insert_resource(NextState(PhysicsDebugState::Running));
+                
+            }
+            PhysicsDebugState::Running => {
+                commands.insert_resource(NextState(PhysicsDebugState::Paused));                
+            },
+        }; 
     }
 }
 

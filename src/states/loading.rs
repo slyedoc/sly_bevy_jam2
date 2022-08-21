@@ -14,6 +14,7 @@ impl Plugin for LoadingPlugin {
                 LoadingState::new(GameState::Loading)
                     .with_collection::<AudioAssets>()
                     .with_collection::<TextureAssets>()
+                    .with_collection::<NexusAudioAssets>()
                     .continue_to_state(GameState::Menu),
             )
             .add_enter_system(GameState::Loading, setup)

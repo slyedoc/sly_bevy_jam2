@@ -4,7 +4,7 @@
 
 mod assets;
 mod camera_controller;
-mod debug_overlay;
+mod debug;
 mod states;
 mod characters;
 mod cursor;
@@ -14,13 +14,13 @@ mod cursor;
 use crate::states::*;
 
 use assets::ButtonColors;
-use bevy::app::App;
 use bevy::prelude::*;
-use bevy_inspector_egui::prelude::*;
+use bevy_inspector_egui::{prelude::*, plugin::InspectorWindows, WorldInspectorParams};
 use bevy_kira_audio::AudioPlugin;
 use camera_controller::{CameraController, CameraControllerPlugin};
+use characters::CharacterPlugin;
 use cursor::CursorPlugin;
-use debug_overlay::DebugOverlayPlugin;
+use debug::DebugPlugin;
 use iyes_loopless::prelude::*;
 use bevy_tweening::TweeningPlugin;
 use sly_physics::prelude::*;
@@ -43,6 +43,10 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::PreLoading)
             .add_plugin(WorldInspectorPlugin::default())
+            .insert_resource(WorldInspectorParams {
+                enabled: false,
+                ..default()
+            })            
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
             // physics plugins
@@ -53,13 +57,14 @@ impl Plugin for GamePlugin {
             // local plugins
             .add_plugin(CameraControllerPlugin)
             .add_plugin(CursorPlugin)
+            .add_plugin(CharacterPlugin)
             //.add_plugin(ActionsPlugin)
             //.add_plugin(InternalAudioPlugin)
             
             // game states
             .add_plugin(StatePlugin)
             // for debugging
-            .add_plugin(DebugOverlayPlugin)
+            .add_plugin(DebugPlugin)
 
             .add_startup_system(setup_clearcolor)
             .add_startup_system(setup_cameras)
@@ -114,4 +119,18 @@ fn update_buttons(
             _ => {}
         }
     }
+}
+
+pub fn hide_window<T: Inspectable + Send + Sync + 'static>(
+    mut inspector_windows: ResMut<InspectorWindows>,
+) {
+    let mut inspector_window_data = inspector_windows.window_data_mut::<T>();
+    inspector_window_data.visible = false;
+}
+
+pub fn show_window<T: Inspectable + Send + Sync + 'static>(
+    mut inspector_windows: ResMut<InspectorWindows>,
+) {
+    let mut inspector_window_data = inspector_windows.window_data_mut::<T>();
+    inspector_window_data.visible = true;
 }

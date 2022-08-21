@@ -35,6 +35,28 @@ impl FontAssets {
             },
         }
     }
+
+    pub fn title(&self, text: String, color: Color) -> TextSection {
+        TextSection {
+            value: text,
+            style: TextStyle {
+                font: self.fira_sans.clone(),
+                font_size: 90.0,
+                color,
+            },
+        }
+    }
+
+    pub fn sub_title(&self, text: String, color: Color) -> TextSection {
+        TextSection {
+            value: text,
+            style: TextStyle {
+                font: self.fira_sans.clone(),
+                font_size: 16.0,
+                color,
+            },
+        }
+    }
 }
 
 #[derive(AssetCollection)]
@@ -47,4 +69,18 @@ pub struct AudioAssets {
 pub struct TextureAssets {
     #[asset(path = "textures/bevy.png")]
     pub texture_bevy: Handle<Image>,
+}
+
+
+#[derive(AssetCollection)]
+pub struct NexusAudioAssets {
+
+    #[asset(path = "audio/nexus/chris.ogg")]
+    pub annoyed0: Handle<AudioSource>,
+
+    #[asset(path = "audio/nexus/hey_stop_that.ogg")]
+    pub annoyed1: Handle<AudioSource>,
+
+    #[asset(path = "audio/nexus/whats_wrong_with_you.ogg")]
+    pub annoyed2: Handle<AudioSource>,
 }

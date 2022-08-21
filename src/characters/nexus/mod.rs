@@ -1,6 +1,37 @@
+mod audio;
+use bevy_kira_audio::AudioSource;
+use audio::*;
+
+
 use bevy::{math::vec3, prelude::*};
+use bevy_inspector_egui::{Inspectable, RegisterInspectable};
+use bevy_kira_audio::prelude::*;
 use bevy_tweening::{lens::*, *};
 use sly_physics::prelude::*;
+use iyes_loopless::prelude::*;
+
+use crate::{GameState, cursor::{InteractionTime, InteractionEvent}};
+
+pub struct NexusPlugin;
+
+impl Plugin for NexusPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .add_audio_channel::<NexuxAudioChannel>()
+            .add_event::<NexusAnnoyEvent>()
+            .add_enter_system(GameState::Playing, setup_annoy_config)
+            .add_system(interaction_check.run_in_state(GameState::Playing))
+            .add_exit_system(GameState::Playing, stop_audio);
+
+        app.register_inspectable::<Nexus>();
+    }
+}
+
+#[derive(Component, Inspectable)]
+pub enum Nexus {
+    Busy,
+    Idle    
+}
 
 pub fn spawn_nexus(
     mut commands: Commands,
@@ -32,6 +63,8 @@ pub fn spawn_nexus(
             mass: Mass(2.0),
             ..default()
         })
+        .insert(InteractionTime::default())
+        .insert(Nexus::Idle)
         .insert(Name::new("Nexus"))
         .with_children(|parent| {
             // main body
@@ -110,13 +143,38 @@ pub fn spawn_nexus(
         });
 }
 
-pub struct RotateChild;
+
+fn interaction_check(
+    mut ineraction_event: EventReader<InteractionEvent>,
+    mut query: Query<(&Nexus, &mut InteractionTime)>,
+    mut annoy_config: ResMut<NexusAnnoyConfig>,
+    channel: Res<AudioChannel<NexuxAudioChannel>>,
+    audio_sources: Res<Assets<AudioSource>>,
+) {
+    for event in ineraction_event.iter() {
+        if let Ok((nexus, mut interaction_time)) = query.get_mut(event.0) {
+            match nexus {
+                Nexus::Idle => {              
+                    let handle = annoy_config.next();      
+                    let source = audio_sources.get(&handle).unwrap();  
+                    interaction_time.timer = Timer::new(source.sound.duration(), false);
+                    
+                    channel.play(handle)    
+                        .with_volume(0.4);     
+                }
+                _ => {
+                    // do nothing
+                }
+            }
+            
+        } 
+    }
+}
 
 fn make_nexus_shape() -> Vec<Vec3> {
     let half_height = 0.5;
     let half_width = 0.3;
     vec![
-        // top
         vec3(0.0, half_height, 0.0),
         vec3(-half_width, 0.0, 0.0),
         vec3(half_width, 0.0, 0.0),

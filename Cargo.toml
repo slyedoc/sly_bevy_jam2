@@ -33,8 +33,8 @@ rand = { version = "0.8.3" }
 
 # my repos
 #sly_camera_controller = { git = "https://github.com/slyedoc/sly_camera_controller", branch = "main" }
-#sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
-sly_physics = { path = "../sly_physics" }
+sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
+#sly_physics = { path = "../sly_physics" }
 
 
 # keep the following in sync with Bevy's dependencies

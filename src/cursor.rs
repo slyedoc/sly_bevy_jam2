@@ -1,25 +1,33 @@
-use bevy::{prelude::*, pbr::NotShadowCaster};
-use bevy_inspector_egui::{prelude::*, bevy_egui::EguiContext};
+use bevy::{pbr::NotShadowCaster, prelude::*};
+use bevy_inspector_egui::{bevy_egui::EguiContext, prelude::*};
 use sly_physics::prelude::*;
+
+use crate::hide_window;
 
 use super::Keep;
 
 pub struct CursorPlugin;
 
+pub struct CursorEvent(pub Entity);
+
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(InspectorPlugin::<Inspector>::new())
+        app.add_event::<CursorEvent>()
+            .add_event::<InteractionEvent>()
+            .add_plugin(InspectorPlugin::<Inspector>::new())
+            .add_startup_system(hide_window::<Inspector>)
             .add_startup_system(setup_cursor)
             .add_system_to_stage(
                 PhysicsFixedUpdate,
-                cursor_system
-                    .after(PhysicsSystems::Resolve),
-            );
+                cursor_system.after(PhysicsSystems::Resolve),
+            )
+            .add_system(advance_interaction_timers)
+            .add_system(interaction_check.after(advance_interaction_timers));
     }
 }
 
 #[derive(Inspectable, Default)]
-struct Inspector {
+pub struct Inspector {
     #[inspectable(deletable = true)]
     active: Option<Entity>,
 }
@@ -62,6 +70,7 @@ fn cursor_system(
     mouse_input: Res<Input<MouseButton>>,
     mut egui_context: ResMut<EguiContext>,
     mut inspector: ResMut<Inspector>,
+    mut interaction_event: EventWriter<CursorEvent>,
 ) {
     let (camera, camera_transform) = camera_query.single();
     let window = windows.primary();
@@ -72,23 +81,65 @@ fn cursor_system(
         let (mut cursor_trans, mut cursor_vis) = cusror_query.single_mut();
         // create a ray
         let mut ray = Ray::from_camera(camera, camera_transform, mouse_pos);
-        
+
         // test ray agaist tlas and see if we hit
         let hit_maybe = ray.intersect_tlas(&tlas);
-        
+
         if let Some(hit) = hit_maybe {
-            // we could do something with the entity here
             cursor_trans.translation = ray.origin + ray.direction * hit.distance;
             cursor_vis.is_visible = true;
         } else {
             cursor_vis.is_visible = false;
         }
 
-        if mouse_input.pressed(MouseButton::Left) {
+        if mouse_input.just_pressed(MouseButton::Left) {
             if let Some(hit) = hit_maybe {
+                interaction_event.send(CursorEvent(hit.entity));
                 inspector.active = Some(hit.entity);
             } else {
                 inspector.active = None;
+            }
+        }
+    }
+}
+
+// Used to limit when entity can be interacted with
+// TODO: I hate the name
+#[derive(Component)]
+pub struct InteractionTime {
+    pub timer: Timer,
+}
+
+// Sent when an entity has been interacted with
+pub struct InteractionEvent(pub Entity);
+
+impl Default for InteractionTime {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.0, false),
+        }
+    }
+}
+
+fn advance_interaction_timers(mut query: Query<&mut InteractionTime>, time: Res<Time>) {
+    for mut interaction_timer in query.iter_mut() {
+        interaction_timer.timer.tick(time.delta());
+    }
+}
+
+pub fn interaction_check(
+    query: Query<(Entity, Option<&InteractionTime>)>,
+    mut cursor_events: EventReader<CursorEvent>,
+    mut interaction_events: EventWriter<InteractionEvent>,
+) {
+    for event in cursor_events.iter() {
+        if let Ok((e, interaction_time)) = query.get(event.0) {
+            if let Some(interaction_time) = interaction_time {
+                if interaction_time.timer.finished() {
+                    interaction_events.send(InteractionEvent(e));
+                }
+            } else {
+                interaction_events.send(InteractionEvent(e));
             }
         }
     }
