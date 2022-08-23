@@ -20,3 +20,12 @@ Day 2
 * Started on a Nexus Charactor
 * Added Cursor and interaction system for Charactors
 * Started using 15.ai, thats a dream come true for anyone that ever messed with TTS before
+
+Day 3
+
+* Nothing, spent all day taking the grandparents out
+
+Day 4
+
+* Not much, setup level state, spend last most of day hours taking grandmother to ER and bringing her home
+

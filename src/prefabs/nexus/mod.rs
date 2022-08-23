@@ -19,9 +19,8 @@ impl Plugin for NexusPlugin {
         app
             .add_audio_channel::<NexuxAudioChannel>()
             .add_event::<NexusAnnoyEvent>()
-            .add_enter_system(GameState::Playing, setup_annoy_config)
-            .add_system(interaction_check.run_in_state(GameState::Playing))
-            .add_exit_system(GameState::Playing, stop_audio);
+            .add_enter_system( GameState::Playing, setup_annoy_config)
+            .add_system(interaction_check.run_in_state(GameState::Playing));
 
         app.register_inspectable::<Nexus>();
     }

@@ -6,7 +6,8 @@ mod assets;
 mod camera_controller;
 mod debug;
 mod states;
-mod characters;
+mod level;
+mod prefabs;
 mod cursor;
 
 //use crate::actions::ActionsPlugin;
@@ -15,10 +16,12 @@ use crate::states::*;
 
 use assets::ButtonColors;
 use bevy::prelude::*;
+use bevy_hanabi::HanabiPlugin;
 use bevy_inspector_egui::{prelude::*, plugin::InspectorWindows, WorldInspectorParams};
 use bevy_kira_audio::AudioPlugin;
 use camera_controller::{CameraController, CameraControllerPlugin};
-use characters::CharacterPlugin;
+use level::LevelPlugin;
+use prefabs::PrefabPlugin;
 use cursor::CursorPlugin;
 use debug::DebugPlugin;
 use iyes_loopless::prelude::*;
@@ -27,10 +30,17 @@ use sly_physics::prelude::*;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 enum GameState {
-    PreLoading, // loads font for assets
+    PreLoading, // loads font for loading screen
     Loading,    // load rest of the assets
     Menu,
     Playing,
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+pub enum LevelState {
+    None,
+    Intro,
+    One,
 }
 
 // Marker for things to keep around between states
@@ -42,11 +52,13 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::PreLoading)
+            .add_loopless_state(LevelState::None)
             .add_plugin(WorldInspectorPlugin::default())
             .insert_resource(WorldInspectorParams {
                 enabled: false,
                 ..default()
             })            
+            .add_plugin(HanabiPlugin)
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
             // physics plugins
@@ -54,15 +66,18 @@ impl Plugin for GamePlugin {
             .add_plugin(GravityPlugin)
             .add_plugin(PhysicsDebugPlugin)
             .add_plugin(PhysicsBvhCameraPlugin)
+
             // local plugins
             .add_plugin(CameraControllerPlugin)
             .add_plugin(CursorPlugin)
-            .add_plugin(CharacterPlugin)
+            .add_plugin(PrefabPlugin)
+            
             //.add_plugin(ActionsPlugin)
             //.add_plugin(InternalAudioPlugin)
             
             // game states
             .add_plugin(StatePlugin)
+            .add_plugin(LevelPlugin)
             // for debugging
             .add_plugin(DebugPlugin)
 
