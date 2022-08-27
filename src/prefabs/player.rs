@@ -104,7 +104,7 @@ fn control_player(
         if input.just_pressed(player_config.jump) {
             lin_vel.0 += vec3(0.0, 9.8, 0.0);
         }
-        
+
         // Handle key input
         let mut axis_input = Vec3::ZERO;
         if input.pressed(player_config.forward) {
@@ -124,6 +124,8 @@ fn control_player(
             lin_vel.0 += axis_input.normalize() * player_config.walk_velocity;
         }
 
-        lin_vel.0.clamp(Vec3::ZERO, Vec3::splat( player_config.walk_velocity));
+        lin_vel
+            .0
+            .clamp(Vec3::ZERO, Vec3::splat(player_config.walk_velocity));
     }
 }

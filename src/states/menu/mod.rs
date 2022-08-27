@@ -35,7 +35,6 @@ fn setup_menu(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
-
     // Title Bar
     commands
         .spawn_bundle(NodeBundle {
@@ -62,9 +61,7 @@ fn setup_menu(
                         ..Default::default()
                     },
                     text: Text {
-                        sections: vec![
-                            font_assets.title("TODO".to_string(), Color::GOLD )
-                        ],
+                        sections: vec![font_assets.title("TODO".to_string(), Color::GOLD)],
                         alignment: Default::default(),
                     },
                     ..Default::default()
@@ -91,13 +88,11 @@ fn setup_menu(
                                 ..Default::default()
                             },
                             text: Text {
-                                sections: vec![
-                                    font_assets.sub_title("for Bevy Game Jam #2".to_string(), Color::WHITE )
-                                ],
+                                sections: vec![font_assets
+                                    .sub_title("for Bevy Game Jam #2".to_string(), Color::WHITE)],
                                 alignment: Default::default(),
                             },
                             ..default()
-                            
                         })
                         .insert(Name::new("Dev"));
                 });
@@ -122,7 +117,6 @@ fn setup_menu(
             ..Default::default()
         })
         .with_children(|parent| {
-            
             for b in MenuButton::iter() {
                 parent
                     .spawn_bundle(ButtonBundle {

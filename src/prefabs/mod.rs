@@ -1,24 +1,19 @@
+mod door;
 mod nexus;
 mod player;
 mod rooms;
 mod switch;
-mod door;
-mod alien;
-mod astronaut_a;
-mod desk;
+mod space_kit;
 
+pub use door::*;
 pub use nexus::*;
 pub use player::*;
-pub use switch::*;
 pub use rooms::*;
-pub use door::*;
-pub use alien::*;
-pub use astronaut_a::*;
-pub use desk::*;
+pub use switch::*;
+pub use space_kit::*;
 
 use bevy::prelude::*;
 
-use self::alien::AlienPlugin;
 
 pub struct PrefabPlugin;
 
@@ -28,9 +23,7 @@ impl Plugin for PrefabPlugin {
             //.add_plugin(PlayerPlugin)
             .add_plugin(SwitchPlugin)
             .add_plugin(DoorPlugin)
-            .add_plugin(AlienPlugin)
-            .add_plugin(AstronautAPlugin)
-            .add_plugin(DeskPlugin)
+            .add_plugin(SpaceKitPlugin)
             .add_plugin(RoomPlugin);
     }
 }

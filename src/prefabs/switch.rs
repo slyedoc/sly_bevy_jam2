@@ -1,19 +1,18 @@
 use std::time::Duration;
 
 use crate::{
-    cursor::{InteractionTime, CursorConfig, CursorInteraction},
+    cursor::{CursorConfig, CursorInteraction, InteractionTime},
     GameState,
 };
-use bevy::{prelude::*, math::vec3};
+use bevy::{math::vec3, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy_kira_audio::AudioSource;
+use bevy_mod_outline::*;
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
-use bevy_mod_outline::*;
 
 pub struct SwitchPlugin;
-
 
 pub enum SwitchState {
     On,
@@ -46,7 +45,6 @@ pub struct SwitchAudioAssets {
     pub flip: Handle<AudioSource>,
 }
 
-
 pub struct SwitchConfig {
     size: Vec3,
     button_size: Vec3,
@@ -69,10 +67,15 @@ impl FromWorld for SwitchConfig {
         base.generate_outline_normals().unwrap();
         let boarder_mesh = meshes.add(base);
 
+        let button_mesh = meshes.add(Mesh::from(shape::Box::new(
+            button_size.x,
+            button_size.y,
+            button_size.z,
+        )));
 
-        let button_mesh = meshes.add(Mesh::from(shape::Box::new(button_size.x, button_size.y, button_size.z)));
-
-        let mut materials = world.get_resource_mut::<Assets<StandardMaterial>>().unwrap();
+        let mut materials = world
+            .get_resource_mut::<Assets<StandardMaterial>>()
+            .unwrap();
         let boarder_mat = materials.add(StandardMaterial {
             base_color: Color::WHITE,
             ..default()
@@ -88,7 +91,7 @@ impl FromWorld for SwitchConfig {
 
         let mut collider_resources = world.get_resource_mut::<ColliderResources>().unwrap();
         let collider = collider_resources.add_box(size);
-        
+
         Self {
             size,
             button_size,
@@ -129,7 +132,7 @@ pub fn spawn_switch(
             .insert(InteractionTime::default())
             .insert_bundle(RigidBodyBundle {
                 mode: RigidBodyMode::Static,
-                collider: config.collider.clone(),                
+                collider: config.collider.clone(),
                 ..default()
             })
             .with_children(|parent| {
@@ -157,21 +160,22 @@ fn interaction_check(
     mut switch_events: EventWriter<SwitchEvent>,
 ) {
     for (switch, cursor_interaction, mut interaction_time) in query.iter_mut() {
-            match cursor_interaction {
-                CursorInteraction::Clicked => {
-                    // Play sound
-                    let handle = audio_assets.flip.clone();                                        
-                    channel.play(handle).with_volume(0.4);
+        match cursor_interaction {
+            CursorInteraction::Clicked => {
+                // Play sound
+                let handle = audio_assets.flip.clone();
+                channel.play(handle).with_volume(0.4);
 
-                    // Set interaction timer
-                    interaction_time.timer.set_duration(Duration::from_secs_f32(1.0));
-                    interaction_time.timer.reset();
+                // Set interaction timer
+                interaction_time
+                    .timer
+                    .set_duration(Duration::from_secs_f32(1.0));
+                interaction_time.timer.reset();
 
-                    // send event to target
-                    switch_events.send(SwitchEvent(switch.target));
-                }
-                _ => {},
+                // send event to target
+                switch_events.send(SwitchEvent(switch.target));
             }
+            _ => {}
         }
     }
-
+}

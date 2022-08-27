@@ -56,7 +56,8 @@ pub fn spawn_nexus(
             ..default()
         });
 
-        commands.entity(e)            
+        commands
+            .entity(e)
             .insert_bundle(RigidBodyBundle {
                 collider: collider_index,
                 mode: RigidBodyMode::Static,

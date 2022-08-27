@@ -15,7 +15,8 @@ pub fn start_audio(
     mut started: Local<bool>,
 ) {
     if !*started {
-        background.play(audio_assets.intro.clone())
+        background
+            .play(audio_assets.intro.clone())
             .looped()
             .with_volume(0.3)
             .fade_in(AudioTween::new(
@@ -25,14 +26,11 @@ pub fn start_audio(
 
         *started = true;
     } else {
-        background.resume()
-        .fade_in(AudioTween::new(
+        background.resume().fade_in(AudioTween::new(
             Duration::from_secs_f32(1.0),
             AudioEasing::Linear,
         ));
     }
-
-
 }
 
 pub fn stop_audio(background: Res<AudioChannel<MenuBackgroundAudio>>) {

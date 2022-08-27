@@ -473,10 +473,8 @@ dependencies = [
  "bevy",
  "bevy-inspector-egui",
  "bevy_asset_loader",
- "bevy_hanabi",
  "bevy_kira_audio",
  "bevy_mod_outline",
- "bevy_polyline",
  "bevy_tweening",
  "embed-resource",
  "image 0.24.3",
@@ -526,23 +524,6 @@ dependencies = [
  "gltf",
  "percent-encoding",
  "thiserror",
-]
-
-[[package]]
-name = "bevy_hanabi"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "371c5bd9edcf42721cd4e769354c221f3c4090e7a1dba0eb0bd6ca29e7828142"
-dependencies = [
- "anyhow",
- "bevy",
- "bitflags",
- "bytemuck",
- "copyless",
- "rand",
- "rand_pcg",
- "ron",
- "serde",
 ]
 
 [[package]]
@@ -694,17 +675,6 @@ dependencies = [
  "bitflags",
  "bytemuck",
  "radsort",
-]
-
-[[package]]
-name = "bevy_polyline"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1198822d48734a1de7f0fe9ddb67111a0b63ab732a612458249d7ccb23c32666"
-dependencies = [
- "bevy",
- "bitflags",
- "naga",
 ]
 
 [[package]]
@@ -2922,15 +2892,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d34f1408f55294453790c48b2f1ebbb1c5b4b7563eb1f418bcfcfdbb06ebb4e7"
 dependencies = [
  "getrandom",
-]
-
-[[package]]
-name = "rand_pcg"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59cad018caf63deb318e5a4586d99a24424a364f40f1e5778c29aca23f4fc73e"
-dependencies = [
- "rand_core",
 ]
 
 [[package]]

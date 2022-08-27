@@ -11,19 +11,21 @@ use bevy::{
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::BvhCamera;
 
-use crate::{Keep, prefabs::Player};
+use crate::{prefabs::Player, Keep};
 
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app
-        .add_loopless_state(CameraState::Main)
-        .add_startup_system(setup_camera)
-        //.add_system(toggle_camera)
-        //.add_enter_system(CameraState::Player, setup_player_camera)
-        //.add_exit_system(CameraState::Player, disable_player_camera)
-        .add_system_to_stage(CoreStage::PostUpdate, update_camera_controller.run_in_state(CameraState::Main));
+        app.add_loopless_state(CameraState::Main)
+            .add_startup_system(setup_camera)
+            //.add_system(toggle_camera)
+            //.add_enter_system(CameraState::Player, setup_player_camera)
+            //.add_exit_system(CameraState::Player, disable_player_camera)
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                update_camera_controller.run_in_state(CameraState::Main),
+            );
     }
 }
 
@@ -37,11 +39,10 @@ pub enum CameraState {
 #[derive(Component)]
 pub struct MainCamera;
 
-
 fn toggle_camera(
     mut commands: Commands,
     input: Res<Input<KeyCode>>,
-    camera_state: Res<CurrentState<CameraState>>,    
+    camera_state: Res<CurrentState<CameraState>>,
 ) {
     if input.just_pressed(KeyCode::F3) {
         match camera_state.0 {
@@ -53,37 +54,38 @@ fn toggle_camera(
             }
             CameraState::Player => {
                 commands.insert_resource(NextState(CameraState::Main));
-            },
+            }
         };
     }
 }
 
 fn setup_player_camera(
     mut commands: Commands,
-    mut camera_query: Query<(Entity, &mut Transform),  With<MainCamera>>,
+    mut camera_query: Query<(Entity, &mut Transform), With<MainCamera>>,
     player_query: Query<Entity, With<Player>>,
 ) {
     let (camera_entity, mut camera_transform) = camera_query.single_mut();
     let player_entity = player_query.single();
 
-    commands.entity(player_entity).push_children(&[camera_entity]);
+    commands
+        .entity(player_entity)
+        .push_children(&[camera_entity]);
     *camera_transform = Transform::default();
 }
 
 fn disable_player_camera(
     mut commands: Commands,
-    mut camera_query: Query<(Entity, &mut Transform, &GlobalTransform),  With<MainCamera>>,
+    mut camera_query: Query<(Entity, &mut Transform, &GlobalTransform), With<MainCamera>>,
     player_query: Query<Entity, With<Player>>,
 ) {
     let (camera_entity, mut camera_transform, global_trans) = camera_query.single_mut();
     let player_entity = player_query.single();
-    camera_transform.translation = global_trans.translation();    
+    camera_transform.translation = global_trans.translation();
 
-
-    commands.entity(player_entity).remove_children(&[camera_entity]);
+    commands
+        .entity(player_entity)
+        .remove_children(&[camera_entity]);
 }
-
-
 
 fn setup_camera(mut commands: Commands) {
     commands

@@ -71,7 +71,6 @@ pub struct TextureAssets {
     pub texture_bevy: Handle<Image>,
 }
 
-
 #[derive(AssetCollection)]
 pub struct SpaceKitAssets {
     #[asset(path = "spacekit/alien.glb#Scene0")]
@@ -80,13 +79,30 @@ pub struct SpaceKitAssets {
     #[asset(path = "spacekit/astronautA.glb#Scene0")]
     pub astronaut_a: Handle<Scene>,
 
+    #[asset(path = "spacekit/astronautB.glb#Scene0")]
+    pub astronaut_b: Handle<Scene>,
+
+    #[asset(path = "spacekit/barrel.glb#Scene0")]
+    pub barrel: Handle<Scene>,
+
+    #[asset(path = "spacekit/barrels.glb#Scene0")]
+    pub barrels: Handle<Scene>,
+
+
+    #[asset(path = "spacekit/barrels_rail.glb#Scene0")]
+    pub barrels_rail: Handle<Scene>,
+
+    #[asset(path = "spacekit/bones.glb#Scene0")]
+    pub bones: Handle<Scene>,
+
+
     #[asset(path = "spacekit/desk_chairArms.glb#Scene0")]
     pub desk_chair_arms: Handle<Scene>,
     #[asset(path = "spacekit/desk_chairStool.glb#Scene0")]
     pub desk_chair_stool: Handle<Scene>,
     #[asset(path = "spacekit/desk_chair.glb#Scene0")]
     pub desk_chair: Handle<Scene>,
-    
+
     #[asset(path = "spacekit/desk_computerCorner.glb#Scene0")]
     pub desk_computer_corner: Handle<Scene>,
 
@@ -95,9 +111,4 @@ pub struct SpaceKitAssets {
 
     #[asset(path = "spacekit/desk_computerScreen.glb#Scene0")]
     pub desk_computer_screen: Handle<Scene>,
-
-
 }
-
-
-

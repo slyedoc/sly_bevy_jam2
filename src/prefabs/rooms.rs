@@ -15,37 +15,54 @@ pub struct RoomPlugin;
 
 impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<TrainingRoomConfig>()
+        app.init_resource::<RoomConfig>()
             .init_resource::<WallConfig>()
             .add_system(spawn_wall.run_in_state(GameState::Playing));
     }
 }
 
-pub struct TrainingRoomConfig {
-    floor_size: f32,
-    thinkness: f32,
-    half_thinkess: f32,
-    wall_height: f32,
-    floor_half: f32,
-    wall_height_half: f32,
+pub struct RoomConfig {
+    pub thinkness: f32,
+    pub half_thinkess: f32,
+
+    pub intro_floor_size: f32,
+    pub intro_floor_half: f32,
+
+    pub landing_floor_size: Vec2,
+
+    pub wall_height: f32,
+    pub wall_height_half: f32,
+
+    pub reactor_radius: f32,
+    pub reactor_length: f32,
+    pub reactor_center_z: f32,
 }
 
-impl Default for TrainingRoomConfig {
+impl Default for RoomConfig {
     fn default() -> Self {
-        let floor_size = 15.0;
+        let intro_floor_size = 15.0;
         let thinkess = 1.0;
         let half_thinkess = thinkess * 0.5;
         let wall_height = 4.0;
-        let floor_half = floor_size * 0.5;
+        let intro_floor_half = intro_floor_size * 0.5;
         let wall_height_half = wall_height * 0.5;
+        let landing_floor_size = vec2(intro_floor_size, 7.0);
 
-        TrainingRoomConfig {
-            floor_size,
+        let reactor_radius = 8.0;
+        let reactor_length = 40.0;
+        let reactor_center_z = intro_floor_half + landing_floor_size.x - half_thinkess;
+
+        RoomConfig {
+            intro_floor_size,
+            landing_floor_size: vec2(intro_floor_size, 7.0),
             thinkness: thinkess,
             half_thinkess,
             wall_height,
-            floor_half,
+            intro_floor_half,
             wall_height_half,
+            reactor_radius,
+            reactor_length,
+            reactor_center_z,
         }
     }
 }
@@ -55,17 +72,17 @@ pub fn spawn_training_room(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut collider_resources: ResMut<ColliderResources>,
-    training_room_config: Res<TrainingRoomConfig>,
+    room_config: Res<RoomConfig>,
     door_config: Res<DoorConfig>,
 ) {
     // floor
     commands
         .spawn_bundle(PbrBundle {
-            transform: Transform::from_xyz(0.0, -training_room_config.half_thinkess, 0.0),
+            transform: Transform::from_xyz(0.0, -room_config.half_thinkess, 0.0),
             mesh: meshes.add(Mesh::from(shape::Box::new(
-                training_room_config.floor_size,
-                training_room_config.thinkness,
-                training_room_config.floor_size,
+                room_config.intro_floor_size,
+                room_config.thinkness,
+                room_config.intro_floor_size,
             ))),
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
@@ -75,9 +92,9 @@ pub fn spawn_training_room(
         })
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
-                training_room_config.floor_size,
-                training_room_config.thinkness,
-                training_room_config.floor_size,
+                room_config.intro_floor_size,
+                room_config.thinkness,
+                room_config.intro_floor_size,
             )),
             mode: RigidBodyMode::Static,
             ..default()
@@ -89,13 +106,13 @@ pub fn spawn_training_room(
         .spawn_bundle(PbrBundle {
             transform: Transform::from_xyz(
                 0.0,
-                training_room_config.half_thinkess + training_room_config.wall_height,
+                room_config.half_thinkess + room_config.wall_height,
                 0.0,
             ),
             mesh: meshes.add(Mesh::from(shape::Box::new(
-                training_room_config.floor_size,
-                training_room_config.thinkness,
-                training_room_config.floor_size,
+                room_config.intro_floor_size,
+                room_config.thinkness,
+                room_config.intro_floor_size,
             ))),
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
@@ -105,9 +122,9 @@ pub fn spawn_training_room(
         })
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
-                training_room_config.floor_size,
-                training_room_config.thinkness,
-                training_room_config.floor_size,
+                room_config.intro_floor_size,
+                room_config.thinkness,
+                room_config.intro_floor_size,
             )),
             mode: RigidBodyMode::Static,
             ..default()
@@ -116,7 +133,7 @@ pub fn spawn_training_room(
 
     //light
     commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(0.0, training_room_config.wall_height, 0.0),
+        transform: Transform::from_xyz(0.0, room_config.wall_height, 0.0),
         ..default()
     });
 
@@ -125,8 +142,7 @@ pub fn spawn_training_room(
         if wall == 0 {
             // Front Wall with Door
             let part_size =
-                (training_room_config.floor_size - door_config.width - door_config.frame_width)
-                    * 0.5;
+                (room_config.intro_floor_size - door_config.width - door_config.frame_width) * 0.5;
             let part_offset = (door_config.width * 0.5) + part_size * 0.5 + door_config.frame_width;
 
             for offset in [-part_offset, part_offset] {
@@ -135,20 +151,21 @@ pub fn spawn_training_room(
                         transform: Transform {
                             translation: vec3(
                                 offset,
-                                training_room_config.wall_height_half,
-                                training_room_config.floor_half,
+                                room_config.wall_height_half,
+                                room_config.intro_floor_half,
                             ),
                             ..default()
                         },
                         ..default()
                     })
                     .insert(Wall {
-                        size: vec2(part_size, training_room_config.wall_height),
+                        size: vec2(part_size, room_config.wall_height),
+                        ..default()
                     });
             }
             // door seal
-            let seal_height = training_room_config.wall_height
-                - (door_config.frame_width * 0.5 + door_config.height);
+            let seal_height =
+                room_config.wall_height - (door_config.frame_width * 0.5 + door_config.height);
             commands
                 .spawn_bundle(SpatialBundle {
                     transform: Transform {
@@ -157,7 +174,7 @@ pub fn spawn_training_room(
                             door_config.height
                                 + (door_config.frame_width * 0.5)
                                 + (seal_height * 0.5),
-                            training_room_config.floor_half,
+                            room_config.intro_floor_half,
                         ),
                         ..default()
                     },
@@ -168,12 +185,13 @@ pub fn spawn_training_room(
                         door_config.width + (door_config.frame_width * 2.0),
                         seal_height,
                     ),
+                    ..default()
                 });
         } else {
             let mut transform = Transform::from_xyz(
                 0.0,
-                training_room_config.wall_height_half,
-                training_room_config.floor_half,
+                room_config.wall_height_half,
+                room_config.intro_floor_half,
             );
             transform.rotate_around(
                 Vec3::ZERO,
@@ -186,10 +204,8 @@ pub fn spawn_training_room(
                     ..default()
                 })
                 .insert(Wall {
-                    size: vec2(
-                        training_room_config.floor_size,
-                        training_room_config.wall_height,
-                    ),
+                    size: vec2(room_config.intro_floor_size, room_config.wall_height),
+                    ..default()
                 });
         }
     }
@@ -198,7 +214,7 @@ pub fn spawn_training_room(
     let door_id = commands
         .spawn_bundle(SpatialBundle {
             transform: Transform {
-                translation: vec3(0.0, 0.0, training_room_config.floor_half),
+                translation: vec3(0.0, 0.0, room_config.intro_floor_half),
                 rotation: Quat::from_axis_angle(Vec3::Y, PI),
                 ..default()
             },
@@ -214,8 +230,8 @@ pub fn spawn_training_room(
             transform: Transform {
                 translation: vec3(
                     door_config.width * 0.5 + 0.5,
-                    training_room_config.thinkness,
-                    training_room_config.floor_half - training_room_config.half_thinkess,
+                    room_config.thinkness,
+                    room_config.intro_floor_half - room_config.half_thinkess,
                 ),
                 rotation: Quat::from_axis_angle(Vec3::Y, PI),
                 ..default()
@@ -228,9 +244,189 @@ pub fn spawn_training_room(
         });
 }
 
+pub fn spawn_reactor_room(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut collider_resources: ResMut<ColliderResources>,
+    room_config: Res<RoomConfig>,
+) {
+    let landing_offset = room_config.intro_floor_size * 0.5;
+
+    // floor
+    commands
+        .spawn_bundle(PbrBundle {
+            transform: Transform::from_xyz(
+                0.0,
+                -room_config.half_thinkess,
+                landing_offset + room_config.landing_floor_size.y * 0.5,
+            ),
+            mesh: meshes.add(Mesh::from(shape::Box::new(
+                room_config.landing_floor_size.x,
+                room_config.thinkness,
+                room_config.landing_floor_size.y,
+            ))),
+            material: materials.add(StandardMaterial {
+                base_color: Color::GRAY,
+                ..default()
+            }),
+            ..default()
+        })
+        .insert_bundle(RigidBodyBundle {
+            collider: collider_resources.add_box(vec3(
+                room_config.landing_floor_size.x,
+                room_config.thinkness,
+                room_config.landing_floor_size.y,
+            )),
+            mode: RigidBodyMode::Static,
+            ..default()
+        })
+        .insert(Name::new("Landing Floor"));
+
+    // cieling
+    commands
+        .spawn_bundle(PbrBundle {
+            transform: Transform::from_xyz(
+                0.0,
+                room_config.half_thinkess + room_config.wall_height,
+                landing_offset + room_config.landing_floor_size.y * 0.5,
+            ),
+            mesh: meshes.add(Mesh::from(shape::Box::new(
+                room_config.landing_floor_size.x,
+                room_config.thinkness,
+                room_config.landing_floor_size.y,
+            ))),
+            material: materials.add(StandardMaterial {
+                base_color: Color::GRAY,
+                ..default()
+            }),
+            ..default()
+        })
+        .insert_bundle(RigidBodyBundle {
+            collider: collider_resources.add_box(vec3(
+                room_config.landing_floor_size.x,
+                room_config.thinkness,
+                room_config.landing_floor_size.y,
+            )),
+            mode: RigidBodyMode::Static,
+            ..default()
+        })
+        .insert(Name::new("Landing Cieling"));
+
+    // walls
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(
+                    -room_config.landing_floor_size.x * 0.5 - room_config.half_thinkess,
+                    room_config.wall_height_half,
+                    landing_offset + room_config.landing_floor_size.y * 0.5,
+                ),
+                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Wall {
+            size: vec2(room_config.landing_floor_size.y, room_config.wall_height),
+            ..default()
+        });
+
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(
+                    room_config.landing_floor_size.x * 0.5 + room_config.half_thinkess,
+                    room_config.wall_height_half,
+                    landing_offset + room_config.landing_floor_size.y * 0.5,
+                ),
+                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Wall {
+            size: vec2(room_config.landing_floor_size.y, room_config.wall_height),
+            ..default()
+        });
+
+    // reactor
+    for i in 0..6 {
+        if i == 3 {
+            continue;
+        }
+        let mut transform = Transform::from_xyz(
+            0.0,
+            room_config.wall_height_half,
+            room_config.reactor_center_z + room_config.reactor_radius,
+        );
+
+        transform.rotate_around(
+            vec3(
+                0.0,
+                room_config.wall_height_half,
+                room_config.reactor_center_z,
+            ),
+            Quat::from_axis_angle(Vec3::X, i as f32 * FRAC_PI_3),
+        );
+
+        commands
+            .spawn_bundle(SpatialBundle {
+                transform,
+                ..default()
+            })
+            .insert(Wall {
+                size: vec2(
+                    room_config.reactor_length,
+                    (room_config.reactor_radius + 1.0) * FRAC_PI_3,
+                ),
+                wall_type: WallType::Reactor,
+            });
+    }
+
+    // reactor end caps
+    for sign in [-1.0, 1.0] {
+
+        commands.spawn_bundle(PointLightBundle {
+            transform: Transform {
+                translation: vec3(
+                     sign * ((room_config.reactor_length - 1.0) * 0.5),
+                    room_config.wall_height_half,
+                    room_config.reactor_center_z,
+                ),
+                ..default()
+            },
+            ..default()
+        });
+
+        commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(
+                    sign * (room_config.reactor_length * 0.5),
+                    room_config.wall_height_half,
+                    room_config.reactor_center_z,
+                ),
+                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Wall {
+            size: vec2(
+                room_config.reactor_radius * 3.0,
+                room_config.reactor_radius * 3.0
+            ),
+            wall_type: WallType::Reactor,
+        });
+    }
+    
+}
+
 pub struct WallConfig {
     pub thickness: f32,
     wall_mat: Handle<StandardMaterial>,
+    reactor_mat: Handle<StandardMaterial>,
 }
 
 impl FromWorld for WallConfig {
@@ -242,10 +438,15 @@ impl FromWorld for WallConfig {
             base_color: Color::ALICE_BLUE,
             ..default()
         });
+        let reactor_mat = materials.add(StandardMaterial {
+            base_color: Color::WHITE,
+            ..default()
+        });
 
         WallConfig {
             thickness: 1.0,
             wall_mat,
+            reactor_mat,
         }
     }
 }
@@ -253,6 +454,21 @@ impl FromWorld for WallConfig {
 #[derive(Component)]
 pub struct Wall {
     size: Vec2,
+    wall_type: WallType,
+}
+
+impl Default for Wall {
+    fn default() -> Self {
+        Wall {
+            size: vec2(1.0, 1.0),
+            wall_type: WallType::Default,
+        }
+    }
+}
+
+enum WallType {
+    Default,
+    Reactor,
 }
 
 fn spawn_wall(
@@ -270,7 +486,10 @@ fn spawn_wall(
                 wall.size.y,
                 config.thickness,
             ))))
-            .insert(config.wall_mat.clone())
+            .insert(match wall.wall_type {
+                WallType::Default => config.wall_mat.clone(),
+                WallType::Reactor => config.reactor_mat.clone(),
+            })
             .insert(Visibility::default())
             .insert(ComputedVisibility::default())
             .insert_bundle(RigidBodyBundle {

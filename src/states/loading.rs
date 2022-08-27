@@ -1,11 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    assets::*,
-    cleanup,
-    prefabs::*,
-    GameState,
-};
+use crate::{assets::*, cleanup, prefabs::*, GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use iyes_loopless::prelude::*;

@@ -7,7 +7,6 @@ use bevy_kira_audio::AudioSource;
 
 #[derive(AssetCollection)]
 pub struct NexusAudioAssets {
-
     #[asset(path = "audio/nexus/chris.ogg")]
     pub annoyed0: Handle<AudioSource>,
 
@@ -22,7 +21,7 @@ pub struct NexuxAudioChannel;
 
 pub struct NexusAnnoyEvent;
 
-pub struct NexusAnnoyConfig {    
+pub struct NexusAnnoyConfig {
     pub list: Vec<Handle<AudioSource>>,
     pub last: Option<usize>,
 }
@@ -37,10 +36,7 @@ impl NexusAnnoyConfig {
     }
 }
 
-pub fn setup_annoy_config(
-    mut commands: Commands,
-    assets: Res<NexusAudioAssets>,
-) {
+pub fn setup_annoy_config(mut commands: Commands, assets: Res<NexusAudioAssets>) {
     commands.insert_resource(NexusAnnoyConfig {
         list: vec![
             assets.annoyed0.clone(),

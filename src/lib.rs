@@ -1,14 +1,14 @@
 // for jam we dont care about these
 #![allow(clippy::type_complexity)]
-#![allow(dead_code)] 
+#![allow(dead_code)]
 
 mod assets;
 mod camera;
+mod cursor;
 mod debug;
-mod states;
 mod level;
 mod prefabs;
-mod cursor;
+mod states;
 
 //use crate::actions::ActionsPlugin;
 //use crate::audio::InternalAudioPlugin;
@@ -16,17 +16,17 @@ use crate::states::*;
 
 use assets::ButtonColors;
 use bevy::prelude::*;
-use bevy_hanabi::HanabiPlugin;
-use bevy_inspector_egui::{prelude::*, plugin::InspectorWindows, WorldInspectorParams};
+//use bevy_hanabi::HanabiPlugin;
+use bevy_inspector_egui::{plugin::InspectorWindows, prelude::*, WorldInspectorParams};
 use bevy_kira_audio::AudioPlugin;
 use bevy_mod_outline::OutlinePlugin;
+use bevy_tweening::TweeningPlugin;
 use camera::CameraPlugin;
-use level::LevelPlugin;
-use prefabs::PrefabPlugin;
 use cursor::CursorPlugin;
 use debug::DebugPlugin;
 use iyes_loopless::prelude::*;
-use bevy_tweening::TweeningPlugin;
+use level::LevelPlugin;
+use prefabs::PrefabPlugin;
 use sly_physics::prelude::*;
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
@@ -45,8 +45,6 @@ pub enum LevelState {
     End,
 }
 
-
-
 // Marker for things to keep around between states
 #[derive(Component)]
 pub struct Keep;
@@ -61,8 +59,8 @@ impl Plugin for GamePlugin {
             .insert_resource(WorldInspectorParams {
                 enabled: false,
                 ..default()
-            })            
-            .add_plugin(HanabiPlugin)
+            })
+            //.add_plugin(HanabiPlugin)
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
             .add_plugin(OutlinePlugin)
@@ -71,23 +69,18 @@ impl Plugin for GamePlugin {
             .add_plugin(GravityPlugin)
             .add_plugin(PhysicsDebugPlugin)
             .add_plugin(PhysicsBvhCameraPlugin)
-
             // local plugins
             .add_plugin(CameraPlugin)
             .add_plugin(CursorPlugin)
             .add_plugin(PrefabPlugin)
-            
             //.add_plugin(ActionsPlugin)
             //.add_plugin(InternalAudioPlugin)
-            
             // game states
             .add_plugin(StatePlugin)
             .add_plugin(LevelPlugin)
             // for debugging
             .add_plugin(DebugPlugin)
-
             .add_startup_system(setup_clearcolor)
-
             .add_system(update_buttons);
 
         // #[cfg(debug_assertions)]
