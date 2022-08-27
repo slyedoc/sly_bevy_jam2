@@ -23,20 +23,20 @@ dev = [
 
 [dependencies]
 bevy = { version = "0.8", default-features = false, features = ["bevy_asset", "bevy_winit", "render", "png", "x11"] }
-bevy-inspector-egui = "0.12.1"
+bevy-inspector-egui = "0.12"
 bevy_kira_audio = { version = "0.12" }
 bevy_asset_loader = { version = "0.12", features = ["stageless"] }
-iyes_loopless = { version = "0.7.0" }
-bevy_polyline = "0.3.0"
-bevy_hanabi = "0.3.1"
-
+iyes_loopless = { version = "0.7" }
+bevy_polyline = "0.3"
+bevy_hanabi = "0.3"
+bevy_mod_outline = "0.2"
 bevy_tweening = "0.5"
 rand = { version = "0.8.3" }
 
 # my repos
 #sly_camera_controller = { git = "https://github.com/slyedoc/sly_camera_controller", branch = "main" }
-sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
-#sly_physics = { path = "../sly_physics" }
+#sly_physics = { git = "https://github.com/slyedoc/sly_physics", branch = "main" }
+sly_physics = { path = "../sly_physics" }
 
 
 # keep the following in sync with Bevy's dependencies

@@ -14,8 +14,6 @@ pub fn start_audio(
     background: Res<AudioChannel<MenuBackgroundAudio>>,
     mut started: Local<bool>,
 ) {
-    info!("Starting background audio");
-
     if !*started {
         background.play(audio_assets.intro.clone())
             .looped()
@@ -38,7 +36,6 @@ pub fn start_audio(
 }
 
 pub fn stop_audio(background: Res<AudioChannel<MenuBackgroundAudio>>) {
-    info!("stopping audio");
     background.pause().fade_out(AudioTween::new(
         Duration::from_secs_f32(1.0),
         AudioEasing::Linear,

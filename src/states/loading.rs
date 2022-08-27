@@ -1,6 +1,11 @@
 use std::time::Duration;
 
-use crate::{assets::*, cleanup, GameState};
+use crate::{
+    assets::*,
+    cleanup,
+    prefabs::*,
+    GameState,
+};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use iyes_loopless::prelude::*;
@@ -15,6 +20,8 @@ impl Plugin for LoadingPlugin {
                     .with_collection::<AudioAssets>()
                     .with_collection::<TextureAssets>()
                     .with_collection::<NexusAudioAssets>()
+                    .with_collection::<SwitchAudioAssets>()
+                    .with_collection::<SpaceKitAssets>()
                     .continue_to_state(GameState::Menu),
             )
             .add_enter_system(GameState::Loading, setup)

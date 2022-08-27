@@ -27,5 +27,8 @@ Day 3
 
 Day 4
 
-* Not much, setup level state, spend last most of day hours taking grandmother to ER and bringing her home
+* Not much, setup level state, spend last most of night taking grandmother to ER and bringing her home
 
+Day 5
+
+* 

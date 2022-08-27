@@ -73,14 +73,31 @@ pub struct TextureAssets {
 
 
 #[derive(AssetCollection)]
-pub struct NexusAudioAssets {
+pub struct SpaceKitAssets {
+    #[asset(path = "spacekit/alien.glb#Scene0")]
+    pub alien: Handle<Scene>,
 
-    #[asset(path = "audio/nexus/chris.ogg")]
-    pub annoyed0: Handle<AudioSource>,
+    #[asset(path = "spacekit/astronautA.glb#Scene0")]
+    pub astronaut_a: Handle<Scene>,
 
-    #[asset(path = "audio/nexus/hey_stop_that.ogg")]
-    pub annoyed1: Handle<AudioSource>,
+    #[asset(path = "spacekit/desk_chairArms.glb#Scene0")]
+    pub desk_chair_arms: Handle<Scene>,
+    #[asset(path = "spacekit/desk_chairStool.glb#Scene0")]
+    pub desk_chair_stool: Handle<Scene>,
+    #[asset(path = "spacekit/desk_chair.glb#Scene0")]
+    pub desk_chair: Handle<Scene>,
+    
+    #[asset(path = "spacekit/desk_computerCorner.glb#Scene0")]
+    pub desk_computer_corner: Handle<Scene>,
 
-    #[asset(path = "audio/nexus/whats_wrong_with_you.ogg")]
-    pub annoyed2: Handle<AudioSource>,
+    #[asset(path = "spacekit/desk_computer.glb#Scene0")]
+    pub desk_computer: Handle<Scene>,
+
+    #[asset(path = "spacekit/desk_computerScreen.glb#Scene0")]
+    pub desk_computer_screen: Handle<Scene>,
+
+
 }
+
+
+

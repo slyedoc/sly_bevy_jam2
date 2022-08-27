@@ -8,13 +8,97 @@ use bevy::{
     prelude::*,
     window::Windows,
 };
+use iyes_loopless::prelude::*;
+use sly_physics::prelude::BvhCamera;
 
-pub struct CameraControllerPlugin;
+use crate::{Keep, prefabs::Player};
 
-impl Plugin for CameraControllerPlugin {
+pub struct CameraPlugin;
+
+impl Plugin for CameraPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_system_to_stage(CoreStage::PostUpdate, update_camera_controller);
+        app
+        .add_loopless_state(CameraState::Main)
+        .add_startup_system(setup_camera)
+        //.add_system(toggle_camera)
+        //.add_enter_system(CameraState::Player, setup_player_camera)
+        //.add_exit_system(CameraState::Player, disable_player_camera)
+        .add_system_to_stage(CoreStage::PostUpdate, update_camera_controller.run_in_state(CameraState::Main));
     }
+}
+
+#[derive(Clone, Eq, PartialEq, Debug, Hash)]
+pub enum CameraState {
+    Main,
+    Editor,
+    Player,
+}
+
+#[derive(Component)]
+pub struct MainCamera;
+
+
+fn toggle_camera(
+    mut commands: Commands,
+    input: Res<Input<KeyCode>>,
+    camera_state: Res<CurrentState<CameraState>>,    
+) {
+    if input.just_pressed(KeyCode::F3) {
+        match camera_state.0 {
+            CameraState::Main => {
+                commands.insert_resource(NextState(CameraState::Editor));
+            }
+            CameraState::Editor => {
+                commands.insert_resource(NextState(CameraState::Player));
+            }
+            CameraState::Player => {
+                commands.insert_resource(NextState(CameraState::Main));
+            },
+        };
+    }
+}
+
+fn setup_player_camera(
+    mut commands: Commands,
+    mut camera_query: Query<(Entity, &mut Transform),  With<MainCamera>>,
+    player_query: Query<Entity, With<Player>>,
+) {
+    let (camera_entity, mut camera_transform) = camera_query.single_mut();
+    let player_entity = player_query.single();
+
+    commands.entity(player_entity).push_children(&[camera_entity]);
+    *camera_transform = Transform::default();
+}
+
+fn disable_player_camera(
+    mut commands: Commands,
+    mut camera_query: Query<(Entity, &mut Transform, &GlobalTransform),  With<MainCamera>>,
+    player_query: Query<Entity, With<Player>>,
+) {
+    let (camera_entity, mut camera_transform, global_trans) = camera_query.single_mut();
+    let player_entity = player_query.single();
+    camera_transform.translation = global_trans.translation();    
+
+
+    commands.entity(player_entity).remove_children(&[camera_entity]);
+}
+
+
+
+fn setup_camera(mut commands: Commands) {
+    commands
+        .spawn_bundle(Camera3dBundle {
+            camera: Camera {
+                is_active: true,
+                ..Default::default()
+            },
+            transform: Transform::from_xyz(0.0, 1.0, 10.0).looking_at(Vec3::ZERO, Vec3::Y),
+            ..default()
+        })
+        .insert(MainCamera)
+        .insert(CameraController::default())
+        .insert(BvhCamera::new(256, 256))
+        .insert(Keep);
 }
 
 #[derive(Component)]

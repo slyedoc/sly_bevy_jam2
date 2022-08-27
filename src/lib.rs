@@ -3,7 +3,7 @@
 #![allow(dead_code)] 
 
 mod assets;
-mod camera_controller;
+mod camera;
 mod debug;
 mod states;
 mod level;
@@ -19,7 +19,8 @@ use bevy::prelude::*;
 use bevy_hanabi::HanabiPlugin;
 use bevy_inspector_egui::{prelude::*, plugin::InspectorWindows, WorldInspectorParams};
 use bevy_kira_audio::AudioPlugin;
-use camera_controller::{CameraController, CameraControllerPlugin};
+use bevy_mod_outline::OutlinePlugin;
+use camera::CameraPlugin;
 use level::LevelPlugin;
 use prefabs::PrefabPlugin;
 use cursor::CursorPlugin;
@@ -41,7 +42,10 @@ pub enum LevelState {
     None,
     Intro,
     One,
+    End,
 }
+
+
 
 // Marker for things to keep around between states
 #[derive(Component)]
@@ -61,6 +65,7 @@ impl Plugin for GamePlugin {
             .add_plugin(HanabiPlugin)
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
+            .add_plugin(OutlinePlugin)
             // physics plugins
             .add_plugin(PhysicsPlugin)
             .add_plugin(GravityPlugin)
@@ -68,7 +73,7 @@ impl Plugin for GamePlugin {
             .add_plugin(PhysicsBvhCameraPlugin)
 
             // local plugins
-            .add_plugin(CameraControllerPlugin)
+            .add_plugin(CameraPlugin)
             .add_plugin(CursorPlugin)
             .add_plugin(PrefabPlugin)
             
@@ -82,7 +87,7 @@ impl Plugin for GamePlugin {
             .add_plugin(DebugPlugin)
 
             .add_startup_system(setup_clearcolor)
-            .add_startup_system(setup_cameras)
+
             .add_system(update_buttons);
 
         // #[cfg(debug_assertions)]
@@ -102,17 +107,6 @@ fn cleanup(mut commands: Commands, q: Query<Entity, Without<Keep>>) {
     for e in q.iter() {
         commands.entity(e).despawn_recursive();
     }
-}
-
-fn setup_cameras(mut commands: Commands) {
-    commands
-        .spawn_bundle(Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 2.0, -10.0).looking_at(Vec3::ZERO, Vec3::Y),
-            ..default()
-        })
-        .insert(CameraController::default())
-        .insert(BvhCamera::new(256, 256)) // only used for physics debug
-        .insert(Keep);
 }
 
 #[allow(clippy::type_complexity)]

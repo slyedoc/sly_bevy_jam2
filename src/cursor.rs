@@ -1,5 +1,6 @@
 use bevy::{pbr::NotShadowCaster, prelude::*};
 use bevy_inspector_egui::{bevy_egui::EguiContext, prelude::*};
+use bevy_mod_outline::Outline;
 use sly_physics::prelude::*;
 
 use crate::hide_window;
@@ -8,21 +9,37 @@ use super::Keep;
 
 pub struct CursorPlugin;
 
+#[derive(Component)]
+pub enum CursorInteraction {
+    /// The node has been clicked
+    Clicked,
+    /// The node has been hovered over
+    Hovered,
+    /// Nothing has happened
+    None,
+}
+
 pub struct CursorEvent(pub Entity);
+
+impl Default for InteractionTime {
+    fn default() -> Self {
+        Self {
+            timer: Timer::from_seconds(0.0, false),
+        }
+    }
+}
 
 impl Plugin for CursorPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CursorEvent>()
-            .add_event::<InteractionEvent>()
+            .init_resource::<CursorConfig>()
             .add_plugin(InspectorPlugin::<Inspector>::new())
             .add_startup_system(hide_window::<Inspector>)
             .add_startup_system(setup_cursor)
-            .add_system_to_stage(
-                PhysicsFixedUpdate,
-                cursor_system.after(PhysicsSystems::Resolve),
-            )
+            .add_system_to_stage(CoreStage::PreUpdate, cursor_raycast)
             .add_system(advance_interaction_timers)
-            .add_system(interaction_check.after(advance_interaction_timers));
+            .add_system(clear_interactions.after(advance_interaction_timers))
+            .add_system(interaction_check.after(clear_interactions));
     }
 }
 
@@ -30,6 +47,22 @@ impl Plugin for CursorPlugin {
 pub struct Inspector {
     #[inspectable(deletable = true)]
     active: Option<Entity>,
+}
+
+pub struct CursorConfig {
+    pub hover: Color,
+    pub clicked: Color,
+    pub width: f32,
+}
+
+impl Default for CursorConfig {
+    fn default() -> Self {
+        Self {
+            hover: Color::LIME_GREEN,
+            clicked: Color::GREEN,
+            width: 10.0,
+        }
+    }
 }
 
 #[derive(Component)]
@@ -62,42 +95,40 @@ fn setup_cursor(
         .insert(Name::new("Cursor"));
 }
 
-fn cursor_system(
+fn cursor_raycast(
     windows: Res<Windows>,
     camera_query: Query<(&Camera, &Transform), Without<Cursor>>,
     mut cusror_query: Query<(&mut Transform, &mut Visibility), With<Cursor>>,
     tlas: Res<Tlas>,
-    mouse_input: Res<Input<MouseButton>>,
     mut egui_context: ResMut<EguiContext>,
-    mut inspector: ResMut<Inspector>,
+
     mut interaction_event: EventWriter<CursorEvent>,
 ) {
-    let (camera, camera_transform) = camera_query.single();
-    let window = windows.primary();
-    if egui_context.ctx_mut().wants_pointer_input() {
-        return;
-    }
-    if let Some(mouse_pos) = window.cursor_position() {
-        let (mut cursor_trans, mut cursor_vis) = cusror_query.single_mut();
-        // create a ray
-        let mut ray = Ray::from_camera(camera, camera_transform, mouse_pos);
-
-        // test ray agaist tlas and see if we hit
-        let hit_maybe = ray.intersect_tlas(&tlas);
-
-        if let Some(hit) = hit_maybe {
-            cursor_trans.translation = ray.origin + ray.direction * hit.distance;
-            cursor_vis.is_visible = true;
-        } else {
-            cursor_vis.is_visible = false;
+    for (camera, camera_transform) in camera_query.iter() {
+        if !camera.is_active {
+            continue;
         }
 
-        if mouse_input.just_pressed(MouseButton::Left) {
+        let window = windows.primary();
+        if egui_context.ctx_mut().wants_pointer_input() {
+            return;
+        }
+        if let Some(mouse_pos) = window.cursor_position() {
+            let (mut cursor_trans, mut cursor_vis) = cusror_query.single_mut();
+            // create a ray
+            let mut ray = Ray::from_camera(camera, camera_transform, mouse_pos);
+
+            // test ray agaist tlas and see if we hit
+            let hit_maybe = ray.intersect_tlas(&tlas);
+
             if let Some(hit) = hit_maybe {
+                cursor_trans.translation = ray.origin + ray.direction * hit.distance;
+                cursor_vis.is_visible = true;
                 interaction_event.send(CursorEvent(hit.entity));
-                inspector.active = Some(hit.entity);
+
             } else {
-                inspector.active = None;
+                cursor_vis.is_visible = false;
+
             }
         }
     }
@@ -110,36 +141,60 @@ pub struct InteractionTime {
     pub timer: Timer,
 }
 
-// Sent when an entity has been interacted with
-pub struct InteractionEvent(pub Entity);
-
-impl Default for InteractionTime {
-    fn default() -> Self {
-        Self {
-            timer: Timer::from_seconds(0.0, false),
-        }
-    }
-}
-
 fn advance_interaction_timers(mut query: Query<&mut InteractionTime>, time: Res<Time>) {
     for mut interaction_timer in query.iter_mut() {
         interaction_timer.timer.tick(time.delta());
     }
 }
 
+pub fn clear_interactions(mut query: Query<(&mut CursorInteraction, Option<&mut Outline>)>) {
+    for (mut interaction, outline) in query.iter_mut() {
+        *interaction = CursorInteraction::None;
+        if let Some(mut outline) = outline {
+            outline.visible = false;
+        }
+    }
+}
+
 pub fn interaction_check(
-    query: Query<(Entity, Option<&InteractionTime>)>,
     mut cursor_events: EventReader<CursorEvent>,
-    mut interaction_events: EventWriter<InteractionEvent>,
+    mut query: Query<(
+        &mut CursorInteraction,
+        Option<&mut Outline>,
+        Option<&InteractionTime>,
+    )>,
+    mouse_input: Res<Input<MouseButton>>,
+    cursor_config: Res<CursorConfig>,
+    mut inspector: ResMut<Inspector>,
 ) {
     for event in cursor_events.iter() {
-        if let Ok((e, interaction_time)) = query.get(event.0) {
-            if let Some(interaction_time) = interaction_time {
-                if interaction_time.timer.finished() {
-                    interaction_events.send(InteractionEvent(e));
+        let mut clicked = mouse_input.just_pressed(MouseButton::Left);
+
+        // see if the entity is interactable
+        if let Ok((mut interaction, outline_maybe, interaction_time_maybe)) =
+            query.get_mut(event.0)
+        {
+            // ignore click if timer is active
+            if let Some(interaction_time) = interaction_time_maybe {
+                if !interaction_time.timer.finished() {
+                    clicked = false;
+                }
+            }
+
+            if clicked {
+                inspector.active = Some(event.0);
+                *interaction = CursorInteraction::Clicked;
+                if let Some(mut outline) = outline_maybe {
+                    outline.visible = true;
+                    outline.colour = cursor_config.clicked
                 }
             } else {
-                interaction_events.send(InteractionEvent(e));
+                inspector.active = None;
+                *interaction = CursorInteraction::Hovered;
+                if let Some(mut outline) = outline_maybe {
+                    outline.visible = true;
+                    outline.colour = cursor_config.hover
+                }
             }
         }
     }

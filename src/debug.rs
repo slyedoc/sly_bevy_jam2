@@ -2,11 +2,14 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
-use bevy_inspector_egui::{WorldInspectorParams};
+use bevy_inspector_egui::WorldInspectorParams;
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 
-use crate::{assets::FontAssets, GameState, Keep, show_window, cursor::Inspector, hide_window, LevelState};
+use crate::{
+    assets::FontAssets, camera::*, cursor::Inspector, hide_window, show_window, GameState, Keep,
+    LevelState,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
 pub enum Debug {
@@ -22,6 +25,9 @@ struct FpsText;
 
 #[derive(Component)]
 struct GameStateText;
+
+#[derive(Component)]
+struct CameraStateText;
 
 #[derive(Component)]
 struct LevelStateText;
@@ -40,6 +46,7 @@ impl Plugin for DebugPlugin {
             .add_enter_system(Debug::Running, setup_overlay)
             .add_enter_system(Debug::Running, show_window::<Inspector>)
             .add_system(update_fps.run_in_state(Debug::Running))
+            .add_system(update_camera_state.run_in_state(Debug::Running))
             .add_system(update_game_state.run_in_state(Debug::Running))
             .add_system(update_level_state.run_in_state(Debug::Running))
             .add_system(update_physcis_debug.run_in_state(Debug::Running))
@@ -53,19 +60,20 @@ fn toggle_debug(
     input: Res<Input<KeyCode>>,
     overlay_state: Res<CurrentState<Debug>>,
     mut world_inspector: ResMut<WorldInspectorParams>,
-
 ) {
     if input.just_pressed(KeyCode::F1) {
         match overlay_state.0 {
             Debug::Paused => {
-                commands.insert_resource(NextState(Debug::Running));                
+                commands.insert_resource(NextState(Debug::Running));
+                commands.insert_resource(NextState(CameraState::Editor));
                 world_inspector.enabled = true;
             }
             Debug::Running => {
-                commands.insert_resource(NextState(Debug::Paused));                
+                commands.insert_resource(NextState(Debug::Paused));
                 world_inspector.enabled = false;
-            },
-        }; 
+                commands.insert_resource(NextState(CameraState::Main));
+            }
+        };
     }
 }
 
@@ -78,12 +86,11 @@ fn toggle_physics_debug(
         match state.0 {
             PhysicsDebugState::Paused => {
                 commands.insert_resource(NextState(PhysicsDebugState::Running));
-                
             }
             PhysicsDebugState::Running => {
-                commands.insert_resource(NextState(PhysicsDebugState::Paused));                
-            },
-        }; 
+                commands.insert_resource(NextState(PhysicsDebugState::Paused));
+            }
+        };
     }
 }
 
@@ -122,6 +129,34 @@ fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
         })
         .insert(Name::new("ui FPS"))
         .insert(FpsText)
+        .insert(Keep)
+        .insert(DebugOverlay);
+
+    offset += offset_change;
+
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: UiRect::<Val> {
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(offset),
+                    ..Default::default()
+                },
+                align_self: AlignSelf::FlexEnd,
+                ..Default::default()
+            },
+            text: Text {
+                sections: vec![
+                    font_assets.h1("Camera State: ".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::GREEN),
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Name::new("ui Physics State"))
+        .insert(CameraStateText)
         .insert(Keep)
         .insert(DebugOverlay);
 
@@ -185,35 +220,35 @@ fn setup_overlay(mut commands: Commands, font_assets: Res<FontAssets>) {
         .insert(Keep)
         .insert(DebugOverlay);
 
-        offset += offset_change;
+    offset += offset_change;
 
-        commands
-            .spawn_bundle(TextBundle {
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    position: UiRect::<Val> {
-                        left: Val::Px(10.0),
-                        bottom: Val::Px(offset),
-                        ..Default::default()
-                    },
-                    align_self: AlignSelf::FlexEnd,
+    commands
+        .spawn_bundle(TextBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                position: UiRect::<Val> {
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(offset),
                     ..Default::default()
                 },
-                // Use `Text` directly
-                text: Text {
-                    // Construct a `Vec` of `TextSection`s
-                    sections: vec![
-                        font_assets.h1("Level State: ".into(), Color::WHITE),
-                        font_assets.h1("".into(), Color::GREEN),
-                    ],
-                    ..Default::default()
-                },
+                align_self: AlignSelf::FlexEnd,
                 ..Default::default()
-            })
-            .insert(Name::new("ui Level State"))
-            .insert(LevelStateText)
-            .insert(Keep)
-            .insert(DebugOverlay);
+            },
+            // Use `Text` directly
+            text: Text {
+                // Construct a `Vec` of `TextSection`s
+                sections: vec![
+                    font_assets.h1("Level State: ".into(), Color::WHITE),
+                    font_assets.h1("".into(), Color::GREEN),
+                ],
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(Name::new("ui Level State"))
+        .insert(LevelStateText)
+        .insert(Keep)
+        .insert(DebugOverlay);
 }
 
 fn update_fps(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
@@ -242,6 +277,15 @@ fn update_game_state(
     }
 }
 
+fn update_camera_state(
+    state: Res<CurrentState<CameraState>>,
+    mut query: Query<&mut Text, With<CameraStateText>>,
+) {
+    for mut text in query.iter_mut() {
+        text.sections[1].value = format!("{:?}", state.0);
+    }
+}
+
 fn update_level_state(
     state: Res<CurrentState<LevelState>>,
     mut query: Query<&mut Text, With<LevelStateText>>,
@@ -250,7 +294,6 @@ fn update_level_state(
         text.sections[1].value = format!("{:?}", state.0);
     }
 }
-
 
 fn update_physcis_debug(
     state: Res<CurrentState<PhysicsState>>,

@@ -1,10 +1,22 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy_kira_audio::AudioSource;
 
-use crate::assets::NexusAudioAssets;
+#[derive(AssetCollection)]
+pub struct NexusAudioAssets {
+
+    #[asset(path = "audio/nexus/chris.ogg")]
+    pub annoyed0: Handle<AudioSource>,
+
+    #[asset(path = "audio/nexus/hey_stop_that.ogg")]
+    pub annoyed1: Handle<AudioSource>,
+
+    #[asset(path = "audio/nexus/whats_wrong_with_you.ogg")]
+    pub annoyed2: Handle<AudioSource>,
+}
 
 pub struct NexuxAudioChannel;
 
