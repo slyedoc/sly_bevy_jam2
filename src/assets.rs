@@ -78,6 +78,9 @@ pub struct TextureAssets {
 
     #[asset(path = "textures/bevy.png")]
     pub texture_bevy: Handle<Image>,
+
+    #[asset(path = "textures/pattern_01.png")]
+    pub pattern_01: Handle<Image>,
 }
 
 #[derive(AssetCollection)]
@@ -112,14 +115,21 @@ pub struct AIAudioAssets {
     #[asset(path = "audio/ai/intro_10.ogg")]
     pub intro_10: Handle<AudioSource>,
 
-    #[asset(path = "audio/ai/intro_11.ogg")]
-    pub intro_11: Handle<AudioSource>,
 
     #[asset(path = "audio/ai/intro_check_2.ogg")]
     pub intro_check_2: Handle<AudioSource>,
 
     #[asset(path = "audio/ai/intro_check_3.ogg")]
     pub intro_check_3: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/chris.ogg")]
+    pub annoyed0: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/hey_stop_that.ogg")]
+    pub annoyed1: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/whats_wrong_with_you.ogg")]
+    pub annoyed2: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]

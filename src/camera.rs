@@ -13,7 +13,7 @@ use sly_physics::prelude::*;
 
 use crate::{
     assets::{TextureAssets, CLEAR},
-    prefabs::{Player, RoomConfig},
+    prefabs::{RoomConfig},
     GameState, Keep,
 };
 
@@ -59,9 +59,6 @@ fn setup_player_camera(
         window.set_cursor_lock_mode(true);
         window.set_cursor_visibility(false);
     }
-
-
-    info!("setup crosshair");
 
     commands
         .spawn_bundle(NodeBundle {
@@ -130,19 +127,18 @@ fn toggle_camera(
     }
 }
 
-fn disable_player_camera(
-    mut commands: Commands,
-    mut camera_query: Query<(Entity, &mut Transform, &GlobalTransform), With<CameraMain>>,
-    player_query: Query<Entity, With<Player>>,
-) {
-    let (camera_entity, mut camera_transform, global_trans) = camera_query.single_mut();
-    let player_entity = player_query.single();
-    camera_transform.translation = global_trans.translation();
+// fn disable_player_camera(
+//     mut commands: Commands,
+//     mut camera_query: Query<(Entity, &mut Transform, &GlobalTransform), With<CameraMain>>,
+// ) {
+//     let (camera_entity, mut camera_transform, global_trans) = camera_query.single_mut();
+//     let player_entity = player_query.single();
+//     camera_transform.translation = global_trans.translation();
 
-    commands
-        .entity(player_entity)
-        .remove_children(&[camera_entity]);
-}
+//     commands
+//         .entity(player_entity)
+//         .remove_children(&[camera_entity]);
+// }
 
 fn setup_camera(mut commands: Commands) {
     commands
@@ -284,6 +280,8 @@ fn update_editor_camera(
 }
 
 pub struct CameraPlayerConfig {
+    pub disable_movement: bool,
+    pub disable_look: bool,
     pub height: f32,
     pub sensitivity: f32,
     pub key_forward: KeyCode,
@@ -300,6 +298,8 @@ pub struct CameraPlayerConfig {
 impl Default for CameraPlayerConfig {
     fn default() -> Self {
         CameraPlayerConfig {
+            disable_movement: false,
+            disable_look: false,
             height: 1.0,
             sensitivity: 0.2,
             key_forward: KeyCode::W,
@@ -373,6 +373,11 @@ fn update_player_camera(
             axis_input.x -= 1.0;
         }
 
+        // used for intro
+        if config.disable_movement {
+            axis_input = Vec3::ZERO;
+        }
+
         // Apply movement update
         if axis_input != Vec3::ZERO {
             config.velocity = axis_input.normalize() * config.walk_speed;
@@ -388,7 +393,7 @@ fn update_player_camera(
             + config.velocity.y * dt * Vec3::Y
             + config.velocity.z * dt * forward;
 
-        // Hack, keep user from falling into reactor
+        // TODO: Hack, keep user from falling into reactor
         transform.translation.z = transform.translation.z.clamp(
             -100.0,
             room_config.reactor_center_z - room_config.reactor_radius,
@@ -407,6 +412,11 @@ fn update_player_camera(
         let mut mouse_delta = Vec2::ZERO;
         for mouse_event in mouse_motion.iter() {
             mouse_delta += mouse_event.delta;
+        }
+
+        // used for intro
+        if config.disable_look {
+            mouse_delta = Vec2::ZERO;
         }
 
         if mouse_delta != Vec2::ZERO {

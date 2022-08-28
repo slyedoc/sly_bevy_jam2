@@ -15,8 +15,8 @@ use sly_physics::prelude::*;
 pub struct SwitchPlugin;
 
 pub enum SwitchState {
-    On,
-    Off,
+    Enabled,
+    Disabled,
 }
 
 #[derive(Component)]
@@ -33,7 +33,7 @@ impl Plugin for SwitchPlugin {
             .add_event::<SwitchEvent>()
             .add_audio_channel::<SwitchAudioChannel>()
             .add_system(spawn_switch)
-            .add_system(interaction_check.run_in_state(GameState::Playing));
+            .add_system_to_stage(CoreStage::PostUpdate, interaction_check.run_in_state(GameState::Playing));
     }
 }
 
@@ -154,28 +154,48 @@ pub fn spawn_switch(
 }
 
 fn interaction_check(
-    mut query: Query<(&Switch, &CursorInteraction, &mut InteractionTime)>,
+    mut query: Query<(
+        &Switch,
+        &CursorInteraction,
+        &mut InteractionTime,
+        &mut Outline,
+    )>,
     audio_assets: Res<SwitchAudioAssets>,
     channel: Res<AudioChannel<SwitchAudioChannel>>,
     mut switch_events: EventWriter<SwitchEvent>,
+    cursor_config: Res<CursorConfig>,
 ) {
-    for (switch, cursor_interaction, mut interaction_time) in query.iter_mut() {
+    for (switch, cursor_interaction, mut interaction_time, mut outline) in query.iter_mut() {
         match cursor_interaction {
             CursorInteraction::Clicked => {
-                // Play sound
-                let handle = audio_assets.flip.clone();
-                channel.play(handle).with_volume(0.4);
+                match switch.state {
+                    SwitchState::Enabled => {
+                        // Play sound
+                        let handle = audio_assets.flip.clone();
+                        channel.play(handle).with_volume(0.4);
 
-                // Set interaction timer
-                interaction_time
-                    .timer
-                    .set_duration(Duration::from_secs_f32(1.0));
-                interaction_time.timer.reset();
+                        // Set interaction timer
+                        interaction_time
+                            .timer
+                            .set_duration(Duration::from_secs_f32(1.0));
+                        interaction_time.timer.reset();
 
-                // send event to target
-                switch_events.send(SwitchEvent(switch.target));
+                        // send event to target
+                        switch_events.send(SwitchEvent(switch.target));
+                    }
+                    SwitchState::Disabled => {},
+                }
             }
-            _ => {}
+            CursorInteraction::Hovered => {
+                outline.visible = true;
+                outline.colour = match switch.state {
+                    SwitchState::Enabled => cursor_config.hover,
+                    SwitchState::Disabled => cursor_config.disabled,
+                };
+            }
+            CursorInteraction::None => {
+                outline.visible = false;
+            }
         }
     }
 }

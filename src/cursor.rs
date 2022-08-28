@@ -53,6 +53,7 @@ pub struct Inspector {
 pub struct CursorConfig {
     pub hover: Color,
     pub clicked: Color,
+    pub disabled: Color,
     pub width: f32,
 }
 
@@ -61,6 +62,7 @@ impl Default for CursorConfig {
         Self {
             hover: Color::LIME_GREEN,
             clicked: Color::GREEN,
+            disabled: Color::RED,
             width: 10.0,
         }
     }
@@ -77,9 +79,9 @@ fn setup_cursor(
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.1,
-                sectors: 30,
-                stacks: 30,
+                radius: 0.01,
+                sectors: 8,
+                stacks: 8,
             })),
             material: materials.add(StandardMaterial {
                 base_color: Color::rgba(1.0, 0.0, 0.0, 0.2),
@@ -164,18 +166,16 @@ pub fn interaction_check(
     mut cursor_events: EventReader<CursorEvent>,
     mut query: Query<(
         &mut CursorInteraction,
-        Option<&mut Outline>,
         Option<&InteractionTime>,
     )>,
     mouse_input: Res<Input<MouseButton>>,
-    cursor_config: Res<CursorConfig>,
     mut inspector: ResMut<Inspector>,
 ) {
     for event in cursor_events.iter() {
         let mut clicked = mouse_input.just_pressed(MouseButton::Left);
 
         // see if the entity is interactable
-        if let Ok((mut interaction, outline_maybe, interaction_time_maybe)) = query.get_mut(event.0)
+        if let Ok((mut interaction, interaction_time_maybe)) = query.get_mut(event.0)
         {
             // ignore click if timer is active
             if let Some(interaction_time) = interaction_time_maybe {
@@ -187,17 +187,11 @@ pub fn interaction_check(
             if clicked {
                 inspector.active = Some(event.0);
                 *interaction = CursorInteraction::Clicked;
-                if let Some(mut outline) = outline_maybe {
-                    outline.visible = true;
-                    outline.colour = cursor_config.clicked
-                }
+
             } else {
                 inspector.active = None;
                 *interaction = CursorInteraction::Hovered;
-                if let Some(mut outline) = outline_maybe {
-                    outline.visible = true;
-                    outline.colour = cursor_config.hover
-                }
+
             }
         }
     }

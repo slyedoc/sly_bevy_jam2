@@ -7,7 +7,7 @@ use bevy::{
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 
-use crate::GameState;
+use crate::{GameState, assets::TextureAssets};
 
 use super::{Door, DoorConfig, Switch, SwitchState};
 
@@ -74,6 +74,7 @@ pub fn spawn_training_room(
     mut collider_resources: ResMut<ColliderResources>,
     room_config: Res<RoomConfig>,
     door_config: Res<DoorConfig>,
+    texture_assets: Res<TextureAssets>,
 ) {
     // floor
     commands
@@ -86,6 +87,8 @@ pub fn spawn_training_room(
             ))),
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
+                perceptual_roughness: 1.0,
+                base_color_texture: Some(texture_assets.pattern_01.clone()),
                 ..default()
             }),
             ..default()
@@ -134,6 +137,7 @@ pub fn spawn_training_room(
     //light
     commands.spawn_bundle(PointLightBundle {
         transform: Transform::from_xyz(0.0, room_config.wall_height, 0.0),
+
         ..default()
     });
 
@@ -240,7 +244,7 @@ pub fn spawn_training_room(
         })
         .insert(Switch {
             target: door_id,
-            state: SwitchState::Off,
+            state: SwitchState::Disabled,
         });
 }
 
@@ -451,8 +455,8 @@ impl FromWorld for WallConfig {
 
 #[derive(Component)]
 pub struct Wall {
-    size: Vec2,
-    wall_type: WallType,
+    pub size: Vec2,
+    pub wall_type: WallType,
 }
 
 impl Default for Wall {
@@ -464,7 +468,7 @@ impl Default for Wall {
     }
 }
 
-enum WallType {
+pub enum WallType {
     Default,
     Reactor,
 }

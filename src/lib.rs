@@ -9,11 +9,11 @@ mod debug;
 mod level;
 mod prefabs;
 mod states;
+mod lines;
 
 //use crate::actions::ActionsPlugin;
 //use crate::audio::InternalAudioPlugin;
 use crate::states::*;
-
 use assets::ButtonColors;
 use bevy::prelude::*;
 //use bevy_hanabi::HanabiPlugin;
@@ -26,6 +26,7 @@ use cursor::CursorPlugin;
 use debug::DebugPlugin;
 use iyes_loopless::prelude::*;
 use level::LevelPlugin;
+use lines::LineMaterial;
 use prefabs::PrefabPlugin;
 use sly_physics::prelude::*;
 
@@ -55,6 +56,7 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::PreLoading)
             .add_loopless_state(LevelState::None)
+
             .add_plugin(WorldInspectorPlugin::default())
             .insert_resource(WorldInspectorParams {
                 enabled: false,
@@ -64,6 +66,8 @@ impl Plugin for GamePlugin {
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
             .add_plugin(OutlinePlugin)
+            .add_plugin(MaterialPlugin::<LineMaterial>::default())
+
             // physics plugins
             .add_plugin(PhysicsPlugin)
             .add_plugin(GravityPlugin)
@@ -97,11 +101,9 @@ fn setup_clearcolor(mut clear_color: ResMut<ClearColor>) {
 }
 
 fn cleanup(mut commands: Commands, q: Query<Entity, Without<Keep>>) {
-    info!("cleanup");
     for e in q.iter() {
         commands.entity(e).despawn_recursive();
     }
-
 }
 
 #[allow(clippy::type_complexity)]
