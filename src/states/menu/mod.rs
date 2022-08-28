@@ -61,7 +61,7 @@ fn setup_menu(
                         ..Default::default()
                     },
                     text: Text {
-                        sections: vec![font_assets.title("TODO".to_string(), Color::GOLD)],
+                        sections: vec![font_assets.title("Reactor".to_string(), Color::GOLD)],
                         alignment: Default::default(),
                     },
                     ..Default::default()

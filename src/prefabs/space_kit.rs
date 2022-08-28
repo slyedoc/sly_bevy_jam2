@@ -50,7 +50,14 @@ fn spawn_spacekit(
                 },
                 SpaceKit::Gate(_) => todo!(),
                 SpaceKit::Hanger(_) => todo!(),
-                SpaceKit::Machine(_) => todo!(),
+                SpaceKit::Machine(a) => match a {
+                    Machine::Barrel => spacekit.machine_barrel.clone(),
+                    Machine::BarrelLarge => spacekit.machine_barrel_large.clone(),
+                    Machine::Generator => spacekit.machine_generator.clone(),
+                    Machine::GeneratorLarge => spacekit.machine_generator_large.clone(),
+                    Machine::Wireless => spacekit.machine_wireless.clone(),
+                    Machine::WirelessCable => spacekit.machine_wireless_cable.clone(),
+                },
                 SpaceKit::Meteor(_) => todo!(),
                 SpaceKit::Monorail(_) => todo!(),
                 SpaceKit::Pipe(_) => todo!(),
@@ -64,7 +71,11 @@ fn spawn_spacekit(
                 SpaceKit::Structure(_) => todo!(),
                 SpaceKit::Terrain(_) => todo!(),
                 SpaceKit::Turret(_) => todo!(),
-                SpaceKit::Weapon(_) => todo!(),
+                SpaceKit::Weapon(a) => match a {
+                    Weapon::Gun => spacekit.weapon_gun.clone(),
+                    Weapon::Rifle => spacekit.weapon_rifle.clone(),
+                    Weapon::BlasterR => spacekit.weapon_blaster_r.clone(),
+                },
                 SpaceKit::Rover => todo!(),
             });
     }
@@ -369,4 +380,5 @@ pub enum Weapon {
     #[default]
     Gun,
     Rifle,
+    BlasterR
 }

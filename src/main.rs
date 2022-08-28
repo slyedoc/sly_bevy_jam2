@@ -5,7 +5,7 @@ use bevy::prelude::{App, ClearColor, Color, Msaa, NonSend, WindowDescriptor};
 use bevy::window::WindowId;
 use bevy::winit::WinitWindows;
 use bevy::DefaultPlugins;
-use bevy_game::GamePlugin;
+use reactor::GamePlugin;
 use std::io::Cursor;
 use winit::window::Icon;
 

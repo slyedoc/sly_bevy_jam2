@@ -16,6 +16,7 @@ impl Plugin for LoadingPlugin {
                     .with_collection::<TextureAssets>()
                     .with_collection::<NexusAudioAssets>()
                     .with_collection::<SwitchAudioAssets>()
+                    .with_collection::<AIAudioAssets>()
                     .with_collection::<SpaceKitAssets>()
                     .continue_to_state(GameState::Menu),
             )

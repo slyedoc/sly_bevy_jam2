@@ -467,24 +467,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_game"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy-inspector-egui",
- "bevy_asset_loader",
- "bevy_kira_audio",
- "bevy_mod_outline",
- "bevy_tweening",
- "embed-resource",
- "image 0.24.3",
- "iyes_loopless",
- "rand",
- "sly_physics",
- "winit",
-]
-
-[[package]]
 name = "bevy_gilrs"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2907,6 +2889,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b800beb9b6e7d2df1fe337c9e3d04e3af22a124460fb4c30fcc22c9117cefb41"
 dependencies = [
  "cty",
+]
+
+[[package]]
+name = "reactor"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy-inspector-egui",
+ "bevy_asset_loader",
+ "bevy_kira_audio",
+ "bevy_mod_outline",
+ "bevy_tweening",
+ "embed-resource",
+ "image 0.24.3",
+ "iyes_loopless",
+ "rand",
+ "sly_physics",
+ "winit",
 ]
 
 [[package]]

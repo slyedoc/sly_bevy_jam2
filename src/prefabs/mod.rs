@@ -4,6 +4,7 @@ mod player;
 mod rooms;
 mod switch;
 mod space_kit;
+mod polarity_blaster;
 
 pub use door::*;
 pub use nexus::*;
@@ -11,6 +12,7 @@ pub use player::*;
 pub use rooms::*;
 pub use switch::*;
 pub use space_kit::*;
+pub use polarity_blaster::*;
 
 use bevy::prelude::*;
 
@@ -24,6 +26,7 @@ impl Plugin for PrefabPlugin {
             .add_plugin(SwitchPlugin)
             .add_plugin(DoorPlugin)
             .add_plugin(SpaceKitPlugin)
-            .add_plugin(RoomPlugin);
+            .add_plugin(RoomPlugin)
+            .add_plugin(PolarityBlasterPlugin);
     }
 }

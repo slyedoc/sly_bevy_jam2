@@ -50,12 +50,23 @@ pub fn setup(
         commands
             .spawn_bundle(SpatialBundle {
                 transform: Transform {
-                    translation: vec3(-3.0, 0.0, 6.0),
+                    translation: vec3(-3.0, 0.0, 6.5),
                     ..default()
                 },
                 ..default()
             })
             .insert(SpaceKit::Desk(Desk::ComputerScreen));
+
+        commands
+            .spawn_bundle(SpatialBundle {
+                transform: Transform {
+                    translation: vec3(-3.1, 1.9, 6.8),
+                    rotation: Quat::from_rotation_y(FRAC_PI_2),
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(PolarityBlaster);
 
     // left of door
     commands

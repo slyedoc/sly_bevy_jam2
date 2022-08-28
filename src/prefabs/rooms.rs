@@ -386,11 +386,10 @@ pub fn spawn_reactor_room(
 
     // reactor end caps
     for sign in [-1.0, 1.0] {
-
         commands.spawn_bundle(PointLightBundle {
             transform: Transform {
                 translation: vec3(
-                     sign * ((room_config.reactor_length - 1.0) * 0.5),
+                    sign * ((room_config.reactor_length - 1.0) * 0.5),
                     room_config.wall_height_half,
                     room_config.reactor_center_z,
                 ),
@@ -400,27 +399,26 @@ pub fn spawn_reactor_room(
         });
 
         commands
-        .spawn_bundle(SpatialBundle {
-            transform: Transform {
-                translation: vec3(
-                    sign * (room_config.reactor_length * 0.5),
-                    room_config.wall_height_half,
-                    room_config.reactor_center_z,
-                ),
-                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+            .spawn_bundle(SpatialBundle {
+                transform: Transform {
+                    translation: vec3(
+                        sign * (room_config.reactor_length * 0.5),
+                        room_config.wall_height_half,
+                        room_config.reactor_center_z,
+                    ),
+                    rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        })
-        .insert(Wall {
-            size: vec2(
-                room_config.reactor_radius * 3.0,
-                room_config.reactor_radius * 3.0
-            ),
-            wall_type: WallType::Reactor,
-        });
+            })
+            .insert(Wall {
+                size: vec2(
+                    room_config.reactor_radius * 3.0,
+                    room_config.reactor_radius * 3.0,
+                ),
+                wall_type: WallType::Reactor,
+            });
     }
-    
 }
 
 pub struct WallConfig {
