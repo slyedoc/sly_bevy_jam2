@@ -25,7 +25,6 @@ impl Plugin for CameraPlugin {
             .init_resource::<CameraEditorConfig>()
             .add_loopless_state(CameraState::Static)
             .add_system(toggle_camera)
-            .add_system(disable_player_camera_alt)
             // setup one camera for entire app
             .add_startup_system(setup_camera)
             .add_enter_system(GameState::Playing, set_camera_player)
@@ -43,21 +42,36 @@ impl Plugin for CameraPlugin {
     }
 }
 
-fn set_camera_player(mut commands: Commands, texture_assets: Res<TextureAssets>) {
+fn set_camera_player(mut commands: Commands) {
     commands.insert_resource(NextState(CameraState::Player));
+}
+
+fn set_camera_static(mut commands: Commands) {
+    commands.insert_resource(NextState(CameraState::Static));
+}
+
+fn setup_player_camera(
+    mut commands: Commands,
+    mut windows: ResMut<Windows>,
+    texture_assets: Res<TextureAssets>
+) {
+    if let Some(window) = windows.get_primary_mut() {
+        window.set_cursor_lock_mode(true);
+        window.set_cursor_visibility(false);
+    }
+
+
+    info!("setup crosshair");
 
     commands
         .spawn_bundle(NodeBundle {
             style: Style {
                 position_type: PositionType::Absolute,
-                size: Size {
-                    width: Val::Percent(100.0),
-                    height: Val::Percent(100.0),
-                },
+                size: Size::new(Val::Percent(20.0), Val::Percent(20.0)),
                 position: UiRect::<Val> {
-                    top: Val::Auto,
-                    left: Val::Auto,
-                    ..Default::default()
+                    top:  Val::Percent(40.0),                                         
+                    left: Val::Percent(40.0),                                        
+                    ..default()
                 },
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -70,23 +84,13 @@ fn set_camera_player(mut commands: Commands, texture_assets: Res<TextureAssets>)
             parent.spawn_bundle(ImageBundle {
                 image: UiImage(texture_assets.crossair_black.clone()),
                 style: Style {
-                    size: Size::new(Val::Px(30.0), Val::Auto),
+                    align_self: AlignSelf::Center,
+                    size: Size::new(Val::Px(30.0), Val::Px(30.0)),
                     ..default()
                 },
                 ..default()
             });
         });
-}
-
-fn set_camera_static(mut commands: Commands) {
-    commands.insert_resource(NextState(CameraState::Static));
-}
-
-fn setup_player_camera(mut windows: ResMut<Windows>) {
-    if let Some(window) = windows.get_primary_mut() {
-        window.set_cursor_lock_mode(true);
-        window.set_cursor_visibility(false);
-    }
 }
 
 fn exit_player_camera(mut windows: ResMut<Windows>) {
@@ -105,26 +109,6 @@ pub enum CameraState {
 
 #[derive(Component)]
 pub struct CameraMain;
-
-fn disable_player_camera_alt(
-    mut commands: Commands,
-    camera_state: Res<CurrentState<CameraState>>,
-    input: Res<Input<KeyCode>>,
-    mut tmp_disable_player_camera: Local<bool>,
-) {
-    if camera_state.0 == CameraState::Player {
-        if input.just_pressed(KeyCode::LAlt) || input.just_pressed(KeyCode::RAlt) {
-            commands.insert_resource(NextState(CameraState::Static));
-            *tmp_disable_player_camera = true;
-        }
-    }
-    if camera_state.0 == CameraState::Static && *tmp_disable_player_camera {
-        if input.just_released(KeyCode::LAlt) || input.just_released(KeyCode::RAlt) {
-            commands.insert_resource(NextState(CameraState::Player));
-            *tmp_disable_player_camera = false;
-        }
-    }
-}
 
 fn toggle_camera(
     mut commands: Commands,
@@ -345,9 +329,8 @@ fn update_player_camera(
 ) {
     let dt = time.delta_seconds();
 
-
     // stop stealing cursor if window is unfocused
-    // TODO: find better way, but this works
+    // TODO: this is last min hacks, find better way, but it kinda this works
     if let Some(window) = windows.get_primary_mut() {
         for _e in window_focus_events.iter() {
             window.set_cursor_lock_mode(true);
@@ -357,6 +340,16 @@ fn update_player_camera(
         for _e in cursor_left_events.iter() {
             window.set_cursor_lock_mode(false);
             window.set_cursor_visibility(true);
+        }
+
+        if key_input.just_pressed(KeyCode::LAlt) {
+            window.set_cursor_lock_mode(false);
+            window.set_cursor_visibility(true);
+        } else if key_input.just_released(KeyCode::LAlt) {
+            window.set_cursor_lock_mode(true);
+            window.set_cursor_visibility(false);
+        } else if key_input.pressed(KeyCode::LAlt) {
+            return;
         }
     }
 
@@ -394,9 +387,12 @@ fn update_player_camera(
         transform.translation += config.velocity.x * dt * right
             + config.velocity.y * dt * Vec3::Y
             + config.velocity.z * dt * forward;
-        
+
         // Hack, keep user from falling into reactor
-        transform.translation.z = transform.translation.z.clamp(-100.0, room_config.reactor_center_z - room_config.reactor_radius);
+        transform.translation.z = transform.translation.z.clamp(
+            -100.0,
+            room_config.reactor_center_z - room_config.reactor_radius,
+        );
 
         // use tlas to find correct height
         let mut ground_ray = Ray::new(transform.translation, -Vec3::Y);

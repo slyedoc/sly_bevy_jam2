@@ -97,9 +97,11 @@ fn setup_clearcolor(mut clear_color: ResMut<ClearColor>) {
 }
 
 fn cleanup(mut commands: Commands, q: Query<Entity, Without<Keep>>) {
+    info!("cleanup");
     for e in q.iter() {
         commands.entity(e).despawn_recursive();
     }
+
 }
 
 #[allow(clippy::type_complexity)]

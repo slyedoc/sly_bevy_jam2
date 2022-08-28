@@ -20,7 +20,7 @@ fn set_level(mut commands: Commands) {
     commands.insert_resource(NextState(LevelState::Intro));
 }
 
-#[derive(Component, Copy, Clone)]
+#[derive(Component, Debug, Copy, Clone)]
 enum PlayingButton {
     Exit,
 }
@@ -38,6 +38,7 @@ fn setup_buttons(
     font_assets: Res<FontAssets>,
     button_colors: Res<ButtonColors>,
 ) {
+    info!("setup_buttons");
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -83,6 +84,7 @@ fn click_button(
 ) {
     for (interaction, btn) in interaction_query.iter() {
         if *interaction == Interaction::Clicked {
+            info!("{:?}", btn);
             match btn {
                 PlayingButton::Exit => {
                     commands.insert_resource(NextState(GameState::Menu));

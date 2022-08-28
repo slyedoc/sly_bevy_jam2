@@ -15,8 +15,8 @@ impl Plugin for IntroPlugin {
     fn build(&self, app: &mut App) {
         app.add_enter_system(LevelState::Intro, spawn_training_room)
             .add_enter_system(LevelState::Intro, spawn_reactor_room)
-            .add_enter_system(LevelState::Intro, setup)
-            .add_exit_system(LevelState::Intro, cleanup);
+            .add_enter_system(LevelState::Intro, setup);
+            //.add_exit_system(LevelState::Intro, cleanup);
     }
 }
 
