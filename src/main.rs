@@ -18,6 +18,7 @@ fn main() {
             height: 600.,
             title: "Game Jam #2".to_string(), // TODO: use a better title
             canvas: Some("#bevy".to_owned()),
+            fit_canvas_to_parent: true,
             ..Default::default()
         })
         .add_plugins(DefaultPlugins)

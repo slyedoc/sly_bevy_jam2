@@ -1,21 +1,20 @@
 mod door;
 mod nexus;
 mod player;
-mod rooms;
-mod switch;
-mod space_kit;
 mod polarity_blaster;
+mod rooms;
+mod space_kit;
+mod switch;
 
 pub use door::*;
 pub use nexus::*;
 pub use player::*;
-pub use rooms::*;
-pub use switch::*;
-pub use space_kit::*;
 pub use polarity_blaster::*;
+pub use rooms::*;
+pub use space_kit::*;
+pub use switch::*;
 
 use bevy::prelude::*;
-
 
 pub struct PrefabPlugin;
 

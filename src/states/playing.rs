@@ -28,7 +28,7 @@ enum PlayingButton {
 impl Into<String> for PlayingButton {
     fn into(self) -> String {
         match self {
-            PlayingButton::Exit => "Exit".to_string(),
+            PlayingButton::Exit => "Esc".to_string(),
         }
     }
 }

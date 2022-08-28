@@ -1,9 +1,10 @@
 use bevy::{pbr::NotShadowCaster, prelude::*};
 use bevy_inspector_egui::{bevy_egui::EguiContext, prelude::*};
 use bevy_mod_outline::Outline;
+use iyes_loopless::state::CurrentState;
 use sly_physics::prelude::*;
 
-use crate::hide_window;
+use crate::{camera::CameraState, hide_window};
 
 use super::Keep;
 
@@ -36,8 +37,8 @@ impl Plugin for CursorPlugin {
             .add_plugin(InspectorPlugin::<Inspector>::new())
             .add_startup_system(hide_window::<Inspector>)
             .add_startup_system(setup_cursor)
-            .add_system_to_stage(CoreStage::PreUpdate, cursor_raycast)
-            .add_system(advance_interaction_timers)
+            .add_system(cursor_raycast)
+            .add_system(advance_interaction_timers.after(cursor_raycast))
             .add_system(clear_interactions.after(advance_interaction_timers))
             .add_system(interaction_check.after(clear_interactions));
     }
@@ -103,6 +104,7 @@ fn cursor_raycast(
     mut egui_context: ResMut<EguiContext>,
 
     mut interaction_event: EventWriter<CursorEvent>,
+    camera_state: Res<CurrentState<CameraState>>,
 ) {
     for (camera, camera_transform) in camera_query.iter() {
         if !camera.is_active {
@@ -115,13 +117,17 @@ fn cursor_raycast(
         }
         if let Some(mouse_pos) = window.cursor_position() {
             let (mut cursor_trans, mut cursor_vis) = cusror_query.single_mut();
+
             // create a ray
-            let mut ray = Ray::from_camera(camera, camera_transform, mouse_pos);
+            let mut ray = match camera_state.0 {
+                CameraState::Player => {
+                    Ray::new(camera_transform.translation, camera_transform.forward())
+                }
+                _ => Ray::from_camera(camera, camera_transform, mouse_pos),
+            };
 
             // test ray agaist tlas and see if we hit
-            let hit_maybe = ray.intersect_tlas(&tlas);
-
-            if let Some(hit) = hit_maybe {
+            if let Some(hit) = ray.intersect_tlas(&tlas) {
                 cursor_trans.translation = ray.origin + ray.direction * hit.distance;
                 cursor_vis.is_visible = true;
                 interaction_event.send(CursorEvent(hit.entity));

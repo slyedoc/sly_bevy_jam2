@@ -65,13 +65,11 @@ fn toggle_debug(
         match overlay_state.0 {
             Debug::Paused => {
                 commands.insert_resource(NextState(Debug::Running));
-                commands.insert_resource(NextState(CameraState::Editor));
                 world_inspector.enabled = true;
             }
             Debug::Running => {
                 commands.insert_resource(NextState(Debug::Paused));
                 world_inspector.enabled = false;
-                commands.insert_resource(NextState(CameraState::Main));
             }
         };
     }

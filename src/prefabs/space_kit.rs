@@ -28,12 +28,10 @@ fn spawn_spacekit(
                     Character::AstronautA => spacekit.astronaut_a.clone(),
                     Character::AstronautB => spacekit.astronaut_b.clone(),
                 },
-                SpaceKit::Barrel(a) => {
-                    match a {
-                        Barrel::Normal => spacekit.barrel.clone(),
-                        Barrel::Multiple => spacekit.barrels.clone(),
-                        Barrel::Rail => spacekit.barrels_rail.clone(),
-                    }
+                SpaceKit::Barrel(a) => match a {
+                    Barrel::Normal => spacekit.barrel.clone(),
+                    Barrel::Multiple => spacekit.barrels.clone(),
+                    Barrel::Rail => spacekit.barrels_rail.clone(),
                 },
                 SpaceKit::Bones => spacekit.bones.clone(),
                 SpaceKit::Chimney(_) => todo!(),
@@ -380,5 +378,5 @@ pub enum Weapon {
     #[default]
     Gun,
     Rifle,
-    BlasterR
+    BlasterR,
 }

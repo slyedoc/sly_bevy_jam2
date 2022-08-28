@@ -1,6 +1,6 @@
 use std::f32::consts::*;
 
-use crate::camera::MainCamera;
+use crate::camera::CameraMain;
 use crate::cleanup;
 use crate::prefabs::*;
 use crate::LevelState;
@@ -14,18 +14,15 @@ pub struct IntroPlugin;
 impl Plugin for IntroPlugin {
     fn build(&self, app: &mut App) {
         app.add_enter_system(LevelState::Intro, spawn_training_room)
-        .add_enter_system(LevelState::Intro, spawn_reactor_room)
+            .add_enter_system(LevelState::Intro, spawn_reactor_room)
             .add_enter_system(LevelState::Intro, setup)
             .add_exit_system(LevelState::Intro, cleanup);
     }
 }
 
-pub fn setup(
-    mut commands: Commands,
-    mut camera_query: Query<&mut Transform, With<MainCamera>>,
-) {
+pub fn setup(mut commands: Commands, mut camera_query: Query<&mut Transform, With<CameraMain>>) {
     let mut camera_trans = camera_query.single_mut();
-    camera_trans.translation = vec3(0.0, 1.0, -3.0);
+    camera_trans.translation = vec3(0.0, 1.7, -3.0);
     camera_trans.look_at(vec3(0.0, 0.8, 0.0), Vec3::Y);
 
     // right of door
@@ -47,42 +44,42 @@ pub fn setup(
         })
         .insert(SpaceKit::Desk(Desk::Chair));
 
-        commands
-            .spawn_bundle(SpatialBundle {
-                transform: Transform {
-                    translation: vec3(-3.0, 0.0, 6.5),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(SpaceKit::Desk(Desk::ComputerScreen));
-
-        commands
-            .spawn_bundle(SpatialBundle {
-                transform: Transform {
-                    translation: vec3(-3.1, 1.9, 6.8),
-                    rotation: Quat::from_rotation_y(FRAC_PI_2),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(PolarityBlaster);
-
-    // left of door
     commands
-    .spawn_bundle(SpatialBundle {
-        transform: Transform {
-            translation: vec3(3.0, 0.0, 6.0),
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(-3.0, 0.0, 6.5),
+                ..default()
+            },
             ..default()
-        },
-        ..default()
-    })
-    .insert(SpaceKit::Desk(Desk::Computer));
+        })
+        .insert(SpaceKit::Desk(Desk::ComputerScreen));
 
     commands
         .spawn_bundle(SpatialBundle {
             transform: Transform {
-                translation: vec3(3.0, 0.0, 5.0),                
+                translation: vec3(-3.1, 1.5, 6.6),
+                rotation: Quat::from_rotation_y(FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(PolarityBlaster);
+
+    // left of door
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(3.0, 0.0, 6.0),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(SpaceKit::Desk(Desk::Computer));
+
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(3.0, 0.0, 5.0),
                 ..default()
             },
             ..default()

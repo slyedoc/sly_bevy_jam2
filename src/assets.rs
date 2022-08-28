@@ -1,4 +1,4 @@
-use bevy::{prelude::*, gltf::Gltf};
+use bevy::{gltf::Gltf, prelude::*};
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 
@@ -67,6 +67,15 @@ pub struct AudioAssets {
 
 #[derive(AssetCollection)]
 pub struct TextureAssets {
+    #[asset(path = "textures/crossair_black.png")]
+    pub crossair_black: Handle<Image>,
+
+    #[asset(path = "textures/crossair_red.png")]
+    pub crossair_red: Handle<Image>,
+
+    #[asset(path = "textures/crossair_white.png")]
+    pub crossair_white: Handle<Image>,
+
     #[asset(path = "textures/bevy.png")]
     pub texture_bevy: Handle<Image>,
 }
@@ -113,7 +122,6 @@ pub struct AIAudioAssets {
     pub intro_check_3: Handle<AudioSource>,
 }
 
-
 #[derive(AssetCollection)]
 pub struct SpaceKitAssets {
     #[asset(path = "spacekit/alien.glb#Scene0")]
@@ -131,13 +139,11 @@ pub struct SpaceKitAssets {
     #[asset(path = "spacekit/barrels.glb#Scene0")]
     pub barrels: Handle<Scene>,
 
-
     #[asset(path = "spacekit/barrels_rail.glb#Scene0")]
     pub barrels_rail: Handle<Scene>,
 
     #[asset(path = "spacekit/bones.glb#Scene0")]
     pub bones: Handle<Scene>,
-
 
     #[asset(path = "spacekit/desk_chairArms.glb#Scene0")]
     pub desk_chair_arms: Handle<Scene>,
@@ -178,12 +184,10 @@ pub struct SpaceKitAssets {
 
     #[asset(path = "spacekit/weapon_rifle.glb#Scene0")]
     pub weapon_rifle: Handle<Scene>,
-    
+
     #[asset(path = "spacekit/weapon_blasterR.glb#Scene0")]
     pub weapon_blaster_r: Handle<Scene>,
 
     #[asset(path = "spacekit/weapon_blasterR.glb")]
     pub weapon_blaster_r_gltf: Handle<Gltf>,
 }
-
-
