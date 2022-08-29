@@ -68,6 +68,35 @@ fn setup_menu(
                 })
                 .insert(Name::new("Title"));
 
+            // author
+            parent
+                .spawn_bundle(NodeBundle {
+                    style: Style {
+                        align_self: AlignSelf::Center,
+                        ..Default::default()
+                    },
+                    color: CLEAR.into(),
+                    ..Default::default()
+                })
+                .insert(Name::new("Author Tag"))
+                .with_children(|parent| {
+                    parent
+                        .spawn_bundle(TextBundle {
+                            style: Style {
+                                align_self: AlignSelf::Center,
+                                margin: UiRect::all(Val::Px(5.0)),
+                                ..Default::default()
+                            },
+                            text: Text {
+                                sections: vec![font_assets
+                                    .sub_title("by Patrick Towles (Slyedoc)".to_string(), Color::WHITE)],
+                                alignment: Default::default(),
+                            },
+                            ..default()
+                        })
+                        .insert(Name::new("Author"));
+                });
+
             // dev tag
             parent
                 .spawn_bundle(NodeBundle {

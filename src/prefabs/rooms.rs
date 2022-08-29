@@ -7,9 +7,9 @@ use bevy::{
 use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 
-use crate::{GameState, assets::TextureAssets};
+use crate::{assets::TextureAssets, GameState};
 
-use super::{Door, DoorConfig, Switch, SwitchState};
+use super::{Dispenser, Door, DoorConfig, Reactor, Switch, SwitchState};
 
 pub struct RoomPlugin;
 
@@ -17,12 +17,24 @@ impl Plugin for RoomPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<RoomConfig>()
             .init_resource::<WallConfig>()
-            .add_system(spawn_wall.run_in_state(GameState::Playing));
+            .add_system(spawn_wall.run_in_state(GameState::Playing))
+            .add_system(add_wall_textures.run_in_state(GameState::Playing));
+    }
+}
+
+fn add_wall_textures(
+    texture_assets: Res<TextureAssets>,
+    wall_config: Res<WallConfig>,
+    mut materials: ResMut<Assets<StandardMaterial>>
+) {
+
+    if let Some(mut mat) = materials.get_mut(&wall_config.reactor_mat) {
+        mat.base_color_texture = Some(texture_assets.pattern_74.clone());
     }
 }
 
 pub struct RoomConfig {
-    pub thinkness: f32,
+    pub thickness: f32,
     pub half_thinkess: f32,
 
     pub intro_floor_size: f32,
@@ -55,7 +67,7 @@ impl Default for RoomConfig {
         RoomConfig {
             intro_floor_size,
             landing_floor_size: vec2(intro_floor_size, 7.0),
-            thinkness: thinkess,
+            thickness: thinkess,
             half_thinkess,
             wall_height,
             intro_floor_half,
@@ -79,16 +91,17 @@ pub fn spawn_training_room(
     // floor
     commands
         .spawn_bundle(PbrBundle {
-            transform: Transform::from_xyz(0.0, -room_config.half_thinkess, 0.0),
+            transform: Transform { 
+                translation: vec3(0.0, -room_config.half_thinkess, 0.0),
+                ..default()
+            },
             mesh: meshes.add(Mesh::from(shape::Box::new(
                 room_config.intro_floor_size,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.intro_floor_size,
             ))),
             material: materials.add(StandardMaterial {
-                base_color: Color::GRAY,
-                perceptual_roughness: 1.0,
-                base_color_texture: Some(texture_assets.pattern_01.clone()),
+                base_color: Color::GRAY,                
                 ..default()
             }),
             ..default()
@@ -96,7 +109,7 @@ pub fn spawn_training_room(
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
                 room_config.intro_floor_size,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.intro_floor_size,
             )),
             mode: RigidBodyMode::Static,
@@ -104,7 +117,7 @@ pub fn spawn_training_room(
         })
         .insert(Name::new("Floor"));
 
-    // cieling
+    // ceiling
     commands
         .spawn_bundle(PbrBundle {
             transform: Transform::from_xyz(
@@ -114,11 +127,13 @@ pub fn spawn_training_room(
             ),
             mesh: meshes.add(Mesh::from(shape::Box::new(
                 room_config.intro_floor_size,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.intro_floor_size,
             ))),
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
+                base_color_texture: Some(texture_assets.pattern_78.clone()),
+                reflectance: 0.1,
                 ..default()
             }),
             ..default()
@@ -126,18 +141,22 @@ pub fn spawn_training_room(
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
                 room_config.intro_floor_size,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.intro_floor_size,
             )),
             mode: RigidBodyMode::Static,
             ..default()
         })
-        .insert(Name::new("Floor"));
+        .insert(Name::new("Ceiling"));
 
     //light
     commands.spawn_bundle(PointLightBundle {
-        transform: Transform::from_xyz(0.0, room_config.wall_height, 0.0),
+        transform: Transform::from_xyz(0.0, room_config.wall_height - 0.2, 0.0),
+        point_light: PointLight {
+            color: Color::WHITE,
 
+            ..default()
+        },
         ..default()
     });
 
@@ -234,7 +253,7 @@ pub fn spawn_training_room(
             transform: Transform {
                 translation: vec3(
                     door_config.width * 0.5 + 0.5,
-                    room_config.thinkness,
+                    room_config.thickness,
                     room_config.intro_floor_half - room_config.half_thinkess,
                 ),
                 rotation: Quat::from_axis_angle(Vec3::Y, PI),
@@ -254,6 +273,7 @@ pub fn spawn_reactor_room(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut collider_resources: ResMut<ColliderResources>,
     room_config: Res<RoomConfig>,
+    texture_assets: Res<TextureAssets>
 ) {
     let landing_offset = room_config.intro_floor_size * 0.5;
 
@@ -267,7 +287,7 @@ pub fn spawn_reactor_room(
             ),
             mesh: meshes.add(Mesh::from(shape::Box::new(
                 room_config.landing_floor_size.x,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.landing_floor_size.y,
             ))),
             material: materials.add(StandardMaterial {
@@ -279,7 +299,7 @@ pub fn spawn_reactor_room(
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
                 room_config.landing_floor_size.x,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.landing_floor_size.y,
             )),
             mode: RigidBodyMode::Static,
@@ -287,7 +307,7 @@ pub fn spawn_reactor_room(
         })
         .insert(Name::new("Landing Floor"));
 
-    // cieling
+    // ceiling
     commands
         .spawn_bundle(PbrBundle {
             transform: Transform::from_xyz(
@@ -297,11 +317,13 @@ pub fn spawn_reactor_room(
             ),
             mesh: meshes.add(Mesh::from(shape::Box::new(
                 room_config.landing_floor_size.x,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.landing_floor_size.y,
             ))),
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
+                base_color_texture: Some(texture_assets.pattern_78.clone()),
+                reflectance: 0.1,                
                 ..default()
             }),
             ..default()
@@ -309,7 +331,7 @@ pub fn spawn_reactor_room(
         .insert_bundle(RigidBodyBundle {
             collider: collider_resources.add_box(vec3(
                 room_config.landing_floor_size.x,
-                room_config.thinkness,
+                room_config.thickness,
                 room_config.landing_floor_size.y,
             )),
             mode: RigidBodyMode::Static,
@@ -322,7 +344,7 @@ pub fn spawn_reactor_room(
         .spawn_bundle(SpatialBundle {
             transform: Transform {
                 translation: vec3(
-                    -room_config.landing_floor_size.x * 0.5 - room_config.half_thinkess,
+                    -room_config.landing_floor_size.x * 0.5,
                     room_config.wall_height_half,
                     landing_offset + room_config.landing_floor_size.y * 0.5,
                 ),
@@ -340,7 +362,7 @@ pub fn spawn_reactor_room(
         .spawn_bundle(SpatialBundle {
             transform: Transform {
                 translation: vec3(
-                    room_config.landing_floor_size.x * 0.5 + room_config.half_thinkess,
+                    room_config.landing_floor_size.x * 0.5,
                     room_config.wall_height_half,
                     landing_offset + room_config.landing_floor_size.y * 0.5,
                 ),
@@ -389,46 +411,134 @@ pub fn spawn_reactor_room(
     }
 
     // reactor end caps
-    for sign in [-1.0, 1.0] {
-        commands.spawn_bundle(PointLightBundle {
+    let reactor_end = vec3(
+        room_config.reactor_length * 0.5,
+        room_config.wall_height_half,
+        room_config.reactor_center_z,
+    );
+
+    // right side reactor
+    commands
+        .spawn_bundle(SpatialBundle {
             transform: Transform {
                 translation: vec3(
-                    sign * ((room_config.reactor_length - 1.0) * 0.5),
-                    room_config.wall_height_half,
-                    room_config.reactor_center_z,
+                    -reactor_end.x + room_config.half_thinkess + 1.0,
+                    reactor_end.y,
+                    reactor_end.z,
                 ),
+                rotation: Quat::from_rotation_z(-FRAC_PI_2),
                 ..default()
             },
             ..default()
+        })
+        .insert(Reactor);
+
+    commands.spawn_bundle(PointLightBundle {
+        transform: Transform {
+            translation: vec3(-reactor_end.x + 6.0, reactor_end.y, reactor_end.z),
+
+            ..default()
+        },
+        ..default()
+    });
+
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(-reactor_end.x, reactor_end.y, reactor_end.z),
+                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Wall {
+            size: vec2(
+                room_config.reactor_radius * 3.0,
+                room_config.reactor_radius * 3.0,
+            ),
+            wall_type: WallType::Reactor,
         });
 
-        commands
-            .spawn_bundle(SpatialBundle {
-                transform: Transform {
-                    translation: vec3(
-                        sign * (room_config.reactor_length * 0.5),
-                        room_config.wall_height_half,
-                        room_config.reactor_center_z,
-                    ),
-                    rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(Wall {
-                size: vec2(
-                    room_config.reactor_radius * 3.0,
-                    room_config.reactor_radius * 3.0,
+    // right side reactor
+    let dispenser = commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(
+                    reactor_end.x - room_config.half_thinkess - 1.0,
+                    reactor_end.y,
+                    reactor_end.z,
                 ),
-                wall_type: WallType::Reactor,
-            });
-    }
+                rotation: Quat::from_rotation_z(-FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Dispenser::default())
+        .id();
+
+    // switch
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(
+                    room_config.landing_floor_size.x * 0.5 - room_config.half_thinkess,
+                    room_config.thickness,
+                    landing_offset + room_config.landing_floor_size.y * 0.5,
+                ),
+                rotation: Quat::from_rotation_y(-FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Switch {
+            target: dispenser,
+            state: SwitchState::Enabled,
+        });
+
+    commands.spawn_bundle(PointLightBundle {
+        transform: Transform {
+            translation: vec3(
+                0.0,
+                room_config.wall_height - 0.2,
+                landing_offset + room_config.landing_floor_size.y * 0.5,
+            ),
+
+            ..default()
+        },
+        ..default()
+    });
+
+    commands.spawn_bundle(PointLightBundle {
+        transform: Transform {
+            translation: vec3(reactor_end.x - 6.0, reactor_end.y, reactor_end.z),
+            ..default()
+        },
+        ..default()
+    });
+
+    commands
+        .spawn_bundle(SpatialBundle {
+            transform: Transform {
+                translation: vec3(reactor_end.x, reactor_end.y, reactor_end.z),
+                rotation: Quat::from_axis_angle(Vec3::Y, FRAC_PI_2),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(Wall {
+            size: vec2(
+                room_config.reactor_radius * 3.0,
+                room_config.reactor_radius * 3.0,
+            ),
+            wall_type: WallType::Reactor,
+        });
 }
 
 pub struct WallConfig {
     pub thickness: f32,
     wall_mat: Handle<StandardMaterial>,
     reactor_mat: Handle<StandardMaterial>,
+
 }
 
 impl FromWorld for WallConfig {
@@ -436,12 +546,16 @@ impl FromWorld for WallConfig {
         let mut materials = world
             .get_resource_mut::<Assets<StandardMaterial>>()
             .unwrap();
+
         let wall_mat = materials.add(StandardMaterial {
             base_color: Color::ALICE_BLUE,
+            perceptual_roughness: 0.089,
             ..default()
         });
         let reactor_mat = materials.add(StandardMaterial {
             base_color: Color::WHITE,
+            unlit: true,
+            perceptual_roughness: 0.089,
             ..default()
         });
 

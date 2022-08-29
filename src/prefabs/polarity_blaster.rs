@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_PI_2;
+
 use bevy::{
     gltf::{Gltf, GltfMesh},
     math::vec3,
@@ -8,14 +10,13 @@ use iyes_loopless::prelude::*;
 use sly_physics::prelude::*;
 
 use crate::{
-    assets::{SpaceKitAssets, CLEAR},
-    camera::CameraMain,
+    assets::SpaceKitAssets,
+    camera::{CameraMain, CameraState},
     cursor::*,
-    lines::*,
-    GameState,
+    GameState, states::Score,
 };
 
-use super::Pellet;
+use super::{Pellet, PelletConfig};
 
 #[derive(Component)]
 pub enum PolarityBlaster {
@@ -34,22 +35,61 @@ impl Plugin for PolarityBlasterPlugin {
                 interaction_check.run_in_state(GameState::Playing),
             )
             .add_system_to_stage(
-                CoreStage::PostUpdate, fire_blaster.run_in_state(GameState::Playing));
+                CoreStage::PostUpdate,
+                fire_blaster
+                    .run_in_state(GameState::Playing)
+                    .run_in_state(CameraState::Player),
+            );
     }
 }
 
 pub struct PolarityBlasterConfig {
     pub offset: Vec3,
     collider: Vec3,
-    hit_change: f32
+    hit_change: f32,
+    laser_offset: Vec3,
+    laser_length: f32,
+    laser_mesh: Handle<Mesh>,
+    laser_yellow_mat: Handle<StandardMaterial>,
+    laser_blue_mat: Handle<StandardMaterial>,
 }
 
-impl Default for PolarityBlasterConfig {
-    fn default() -> Self {
+impl FromWorld for PolarityBlasterConfig {
+    fn from_world(world: &mut World) -> Self {
+        let mut meshes = world.get_resource_mut::<Assets<Mesh>>().unwrap();
+
+        let laser_length = 30.0;
+        let laser_offset = vec3(0.0, 0.1, -laser_length * 0.5);
+
+        let laser_mesh = meshes.add(Mesh::from(shape::Capsule {
+            radius: 0.005,
+            depth: laser_length,
+            ..default()
+        }));
+
+        let mut materials = world
+            .get_resource_mut::<Assets<StandardMaterial>>()
+            .unwrap();
+        let laser_blue_mat = materials.add(StandardMaterial {
+            base_color: Color::BLUE,
+            unlit: true,
+            ..default()
+        });
+        let laser_yellow_mat = materials.add(StandardMaterial {
+            base_color: Color::YELLOW,
+            unlit: true,
+            ..default()
+        });
+
         Self {
             offset: vec3(0.3, -0.3, -0.7),
             collider: vec3(0.3, 0.4, 0.9),
             hit_change: 0.01,
+            laser_length,
+            laser_offset,
+            laser_mesh,
+            laser_yellow_mat,
+            laser_blue_mat,
         }
     }
 }
@@ -57,65 +97,85 @@ impl Default for PolarityBlasterConfig {
 #[derive(Component)]
 pub struct Laser;
 
-fn fire_blaster(
+
+#[derive(PartialEq, Eq)]
+enum HitType {
+    None,
+    Blue,
+    Yellow,
+}
+
+pub fn fire_blaster(
     mut commands: Commands,
     query: Query<(Entity, &PolarityBlaster), With<Parent>>,
     camera_query: Query<&Transform, With<CameraMain>>,
     mouse_input: Res<Input<MouseButton>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<LineMaterial>>,
-    mut laser_query: Query<(Entity, &Handle<LineMaterial>), With<Laser>>,
+    mut laser_query: Query<Entity, With<Laser>>,
     tlas: Res<Tlas>,
     mut pellet_query: Query<&mut Pellet>,
+    pellet_config: Res<PelletConfig>,
     config: Res<PolarityBlasterConfig>,
+    mut score: ResMut<Score>,
 ) {
     let camera_trans = camera_query.single();
-    
+
     for (_entity, _blaster) in query.iter() {
-        let mut fire = false;
-        let mut color = Color::NONE;
-        let mut change = 0.0;
-        if mouse_input.pressed(MouseButton::Left) {
-            fire = true;
-            color = Color::BLUE;
-            change = config.hit_change;
-        } else if mouse_input.pressed(MouseButton::Right) {
-            fire = true;
-            color = Color::YELLOW;
-            change = -config.hit_change;
+        let mut hit_type = HitType::None;
+        if mouse_input.pressed(MouseButton::Left) && !mouse_input.pressed(MouseButton::Right) {
+            hit_type = HitType::Blue;
+            
+        } else if mouse_input.pressed(MouseButton::Right) && !mouse_input.pressed(MouseButton::Left)
+        {
+            hit_type = HitType::Yellow;
         }
 
-        let (laser_entity, laser_material_handle) = laser_query.single_mut();
-        let  laser_material = materials.get_mut(&laser_material_handle).unwrap();
-        if fire {
+        let laser_entity = laser_query.single_mut();
+        if hit_type != HitType::None {
             // create laser
-            laser_material.color = color;
-            commands.entity(laser_entity).insert(meshes.add(Mesh::from(LineStrip {
-                points: vec![
-                    Vec3::ZERO,
-                    -Vec3::Z * 20.0,
-                ],
-            })));
+            commands
+                .entity(laser_entity)
+                .insert(match hit_type {
+                    HitType::Blue => config.laser_blue_mat.clone(),
+                    HitType::Yellow => config.laser_yellow_mat.clone(),
+                    HitType::None => unreachable!(),
+                })
+                .insert(config.laser_mesh.clone());
 
-            // update pellet if hit
+            // // update pellet if hit
             let mut ray = Ray::new(camera_trans.translation, camera_trans.forward());
             if let Some(hit) = ray.intersect_tlas(&tlas) {
                 if let Ok(mut pellet) = pellet_query.get_mut(hit.entity) {
-                    pellet.value = (pellet.value + change).clamp(0.0, 1.0);
+                    
+                    let was_in_range = (pellet.value - 0.5).abs() < pellet_config.allow_range;
+                    match hit_type {
+
+                        HitType::Blue => {
+                            pellet.value = (pellet.value - config.hit_change).clamp(0.0, 1.0);                        
+                        },
+                        HitType::Yellow => {
+                            pellet.value = (pellet.value + config.hit_change).clamp(0.0, 1.0);
+                        },
+                        HitType::None => unreachable!(),
+                    }
+                    let in_range = (pellet.value - 0.5).abs() < pellet_config.allow_range;
+                    if !was_in_range && in_range {
+                        score.0 += 1;
+                    }
+                    if was_in_range && !in_range {
+                        score.0 -= 1;
+                    }
+        
+                    pellet.hit = true;
                 }
             }
         } else {
             // clear laser
-            commands.entity(laser_entity).insert(meshes.add(Mesh::from(LineStrip {
-                points: vec![
-                ],
-            })));
+            commands.entity(laser_entity).remove::<Handle<Mesh>>();
         }
-
     }
 }
 
-
+#[allow(clippy::too_many_arguments)]
 pub fn spawn_blaster(
     mut commands: Commands,
     mut query: Query<(Entity, &mut PolarityBlaster), Added<PolarityBlaster>>,
@@ -123,11 +183,9 @@ pub fn spawn_blaster(
     assets_gltf: Res<Assets<Gltf>>,
     assets_gltf_mesh: Res<Assets<GltfMesh>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<LineMaterial>>,
     cursor_config: Res<CursorConfig>,
     mut collider_resources: ResMut<ColliderResources>,
     config: Res<PolarityBlasterConfig>,
-
 ) {
     for (e, mut _blaster) in query.iter_mut() {
         if let Some(gltf) = assets_gltf.get(&spacekit.weapon_blaster_r_gltf) {
@@ -151,19 +209,18 @@ pub fn spawn_blaster(
                     })
                     .insert(Name::new("Blaster"))
                     .with_children(|parent| {
-
                         //add laser
                         parent
-                        .spawn_bundle(MaterialMeshBundle {
-                            mesh: meshes.add(Mesh::from(LineStrip {
-                                points: vec![
-                                ],
-                            })),
-                            transform: Transform::from_xyz(0.0, 0.0, 0.0),
-                            material: materials.add(LineMaterial { color: CLEAR }),
-                            ..default()
-                        })
-                        .insert(Laser);
+                            .spawn_bundle(PbrBundle {
+                                transform: Transform {
+                                    translation: config.laser_offset,
+                                    rotation: Quat::from_rotation_x(FRAC_PI_2),
+                                    ..default()
+                                },
+                                material: config.laser_blue_mat.clone(),
+                                ..default()
+                            })
+                            .insert(Laser);
 
                         for prim in &gltf_mesh.primitives {
                             let mesh_handle = prim.mesh.clone();

@@ -12,9 +12,9 @@ pub enum MenuButton {
     Exit,
 }
 
-impl Into<String> for MenuButton {
-    fn into(self) -> String {
-        match self {
+impl From<MenuButton> for String {
+    fn from(b: MenuButton) -> Self {
+        match b {
             MenuButton::Play => "Play".to_string(),
             #[cfg(not(target_arch = "wasm32"))]
             MenuButton::Exit => "Exit".to_string(),
@@ -44,9 +44,8 @@ pub fn button_click(
                 MenuButton::Play => {
                     commands.insert_resource(NextState(GameState::Playing));
                     commands.insert_resource(NextState(LevelState::Intro));
-                    
-                },
-              
+                }
+
                 #[cfg(not(target_arch = "wasm32"))]
                 MenuButton::Exit => app_exit.send(AppExit),
             }

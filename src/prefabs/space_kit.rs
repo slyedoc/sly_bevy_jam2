@@ -15,46 +15,53 @@ impl Plugin for SpaceKitPlugin {
 
 fn spawn_spacekit(
     mut commands: Commands,
-    query: Query<(Entity, &SpaceKit), Changed<SpaceKit>>,
-    spacekit: Res<SpaceKitAssets>,
+    query: Query<(Entity, &SpaceKit, Option<&Name>), Changed<SpaceKit>>,
+    space_kit: Res<SpaceKitAssets>,
 ) {
-    for (e, kit) in query.iter() {
+    for (e, kit, name_maybe) in query.iter() {
+
+        if name_maybe.is_none() {
+            commands
+            .entity(e)
+            .insert(Name::new(format!("{:?}", kit)));
+        }
+        
+
         commands
             .entity(e)
-            .insert(Name::new(format!("{:?}", kit)))
             .insert(match kit {
                 SpaceKit::Character(a) => match a {
-                    Character::Alien => spacekit.alien.clone(),
-                    Character::AstronautA => spacekit.astronaut_a.clone(),
-                    Character::AstronautB => spacekit.astronaut_b.clone(),
+                    Character::Alien => space_kit.alien.clone(),
+                    Character::AstronautA => space_kit.astronaut_a.clone(),
+                    Character::AstronautB => space_kit.astronaut_b.clone(),
                 },
                 SpaceKit::Barrel(a) => match a {
-                    Barrel::Normal => spacekit.barrel.clone(),
-                    Barrel::Multiple => spacekit.barrels.clone(),
-                    Barrel::Rail => spacekit.barrels_rail.clone(),
+                    Barrel::Normal => space_kit.barrel.clone(),
+                    Barrel::Multiple => space_kit.barrels.clone(),
+                    Barrel::Rail => space_kit.barrels_rail.clone(),
                 },
-                SpaceKit::Bones => spacekit.bones.clone(),
+                SpaceKit::Bones => space_kit.bones.clone(),
                 SpaceKit::Chimney(_) => todo!(),
                 SpaceKit::Corridor(_) => todo!(),
                 SpaceKit::Craft(_) => todo!(),
                 SpaceKit::Crater(_) => todo!(),
                 SpaceKit::Desk(a) => match a {
-                    Desk::Chair => spacekit.desk_chair.clone(),
-                    Desk::ChairArms => spacekit.desk_chair_arms.clone(),
-                    Desk::ChairStool => spacekit.desk_chair_stool.clone(),
-                    Desk::Computer => spacekit.desk_computer.clone(),
-                    Desk::ComputerCorner => spacekit.desk_computer_corner.clone(),
-                    Desk::ComputerScreen => spacekit.desk_computer_screen.clone(),
+                    Desk::Chair => space_kit.desk_chair.clone(),
+                    Desk::ChairArms => space_kit.desk_chair_arms.clone(),
+                    Desk::ChairStool => space_kit.desk_chair_stool.clone(),
+                    Desk::Computer => space_kit.desk_computer.clone(),
+                    Desk::ComputerCorner => space_kit.desk_computer_corner.clone(),
+                    Desk::ComputerScreen => space_kit.desk_computer_screen.clone(),
                 },
                 SpaceKit::Gate(_) => todo!(),
                 SpaceKit::Hanger(_) => todo!(),
                 SpaceKit::Machine(a) => match a {
-                    Machine::Barrel => spacekit.machine_barrel.clone(),
-                    Machine::BarrelLarge => spacekit.machine_barrel_large.clone(),
-                    Machine::Generator => spacekit.machine_generator.clone(),
-                    Machine::GeneratorLarge => spacekit.machine_generator_large.clone(),
-                    Machine::Wireless => spacekit.machine_wireless.clone(),
-                    Machine::WirelessCable => spacekit.machine_wireless_cable.clone(),
+                    Machine::Barrel => space_kit.machine_barrel.clone(),
+                    Machine::BarrelLarge => space_kit.machine_barrel_large.clone(),
+                    Machine::Generator => space_kit.machine_generator.clone(),
+                    Machine::GeneratorLarge => space_kit.machine_generator_large.clone(),
+                    Machine::Wireless => space_kit.machine_wireless.clone(),
+                    Machine::WirelessCable => space_kit.machine_wireless_cable.clone(),
                 },
                 SpaceKit::Meteor(_) => todo!(),
                 SpaceKit::Monorail(_) => todo!(),
@@ -62,7 +69,18 @@ fn spawn_spacekit(
                 SpaceKit::Platform(_) => todo!(),
                 SpaceKit::Rail(_) => todo!(),
                 SpaceKit::Rock(_) => todo!(),
-                SpaceKit::Rocket(_) => todo!(),
+                SpaceKit::Rocket(a) => match a {
+                    Rocket::BaseA => space_kit.rocket_base_a.clone(),
+                    Rocket::BaseB => space_kit.rocket_base_b.clone(),
+                    Rocket::FinsA => space_kit.rocket_fins_a.clone(),
+                    Rocket::FinsB => space_kit.rocket_fins_b.clone(),
+                    Rocket::FuelA => space_kit.rocket_fuel_a.clone(),
+                    Rocket::FuelB => space_kit.rocket_fuel_b.clone(),
+                    Rocket::SidesA => space_kit.rocket_sides_a.clone(),
+                    Rocket::SidesB => space_kit.rocket_sides_b.clone(),
+                    Rocket::TopA => space_kit.rocket_top_a.clone(),
+                    Rocket::TopB => space_kit.rocket_top_b.clone(),
+                },
                 SpaceKit::Stairs(_) => todo!(),
                 SpaceKit::SatelliteDish(_) => todo!(),
                 SpaceKit::Supports(_) => todo!(),
@@ -70,16 +88,16 @@ fn spawn_spacekit(
                 SpaceKit::Terrain(_) => todo!(),
                 SpaceKit::Turret(_) => todo!(),
                 SpaceKit::Weapon(a) => match a {
-                    Weapon::Gun => spacekit.weapon_gun.clone(),
-                    Weapon::Rifle => spacekit.weapon_rifle.clone(),
-                    Weapon::BlasterR => spacekit.weapon_blaster_r.clone(),
+                    Weapon::Gun => space_kit.weapon_gun.clone(),
+                    Weapon::Rifle => space_kit.weapon_rifle.clone(),
+                    Weapon::BlasterR => space_kit.weapon_blaster_r.clone(),
                 },
                 SpaceKit::Rover => todo!(),
             });
     }
 }
 
-#[derive(Component, PartialEq, Debug, Inspectable, Copy, Clone)]
+#[derive(Component, PartialEq, Eq, Debug, Inspectable, Copy, Clone)]
 pub enum SpaceKit {
     Character(Character),
     Barrel(Barrel),
@@ -109,7 +127,7 @@ pub enum SpaceKit {
     Rover,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Character {
     Alien,
     #[default]
@@ -117,7 +135,7 @@ pub enum Character {
     AstronautB,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Barrel {
     #[default]
     Normal,
@@ -125,7 +143,7 @@ pub enum Barrel {
     Rail,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Corridor {
     #[default]
     Normal,
@@ -144,7 +162,7 @@ pub enum Corridor {
     Window,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Craft {
     CargoA,
     CargoB,
@@ -157,21 +175,21 @@ pub enum Craft {
     SpeederD,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Crater {
     #[default]
     Normal,
     Large,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Chimney {
     #[default]
     Normal,
     Detailed,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Desk {
     ChairArms,
     Chair,
@@ -182,14 +200,14 @@ pub enum Desk {
     ComputerScreen,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Gate {
     Complex,
     #[default]
     Simple,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Hanger {
     LargeA,
     #[default]
@@ -201,7 +219,7 @@ pub enum Hanger {
     SmallB,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Machine {
     Barrel,
     BarrelLarge,
@@ -212,7 +230,7 @@ pub enum Machine {
     Wireless,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Meteor {
     #[default]
     Normal,
@@ -220,7 +238,7 @@ pub enum Meteor {
     Half,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Monorail {
     TrackCornerLarge,
     TrackCornerSmall,
@@ -237,7 +255,7 @@ pub enum Monorail {
     TrainPassenger,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Pipe {
     CornerDiagonal,
     Corner,
@@ -260,7 +278,7 @@ pub enum Pipe {
     SupportLow,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Platform {
     #[default]
     Center,
@@ -278,7 +296,7 @@ pub enum Platform {
     Straight,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Rail {
     Corner,
     End,
@@ -287,7 +305,7 @@ pub enum Rail {
     Middle,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Rock {
     #[default]
     Normal,
@@ -300,7 +318,7 @@ pub enum Rock {
     CrystalsLargeB,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Rocket {
     #[default]
     BaseA,
@@ -315,7 +333,7 @@ pub enum Rocket {
     TopB,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum SatelliteDish {
     Detailed,
     #[default]
@@ -323,7 +341,7 @@ pub enum SatelliteDish {
     Large,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Stairs {
     Corner,
     #[default]
@@ -331,7 +349,7 @@ pub enum Stairs {
     Short,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Structure {
     #[default]
     Normal,
@@ -340,14 +358,14 @@ pub enum Structure {
     Diagonal,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Supports {
     High,
     #[default]
     Low,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Terrain {
     #[default]
     Normal,
@@ -366,14 +384,14 @@ pub enum Terrain {
     Side,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Turret {
     Double,
     #[default]
     Single,
 }
 
-#[derive(Debug, PartialEq, Inspectable, Default, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq, Inspectable, Default, Copy, Clone)]
 pub enum Weapon {
     #[default]
     Gun,

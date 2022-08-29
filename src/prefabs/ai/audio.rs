@@ -43,8 +43,6 @@ pub fn stop_audio(channel: Res<AudioChannel<AIAudioChannel>>) {
     ));
 }
 
-
-
 pub struct AIIntroConfig {
     pub list: Vec<Handle<AudioSource>>,
     pub step: usize,
@@ -52,7 +50,7 @@ pub struct AIIntroConfig {
 
 impl AIIntroConfig {
     // TODO: make this random
-    pub fn next(&mut self) -> Option<Handle<AudioSource>> {        
+    pub fn next(&mut self) -> Option<Handle<AudioSource>> {
         if self.list.len() - 1 < self.step {
             return None;
         }
@@ -80,5 +78,32 @@ pub fn setup_intro_config(mut commands: Commands, assets: Res<AIAudioAssets>) {
             assets.intro_10.clone(),
         ],
         step: 0,
+    });
+}
+
+// high score
+pub struct AIHighConfig {
+    pub list: Vec<Handle<AudioSource>>,
+    pub last: Option<usize>,
+}
+
+impl AIHighConfig {
+    // TODO: make this random
+    pub fn next(&mut self) -> Handle<AudioSource> {
+        let last = self.last.unwrap_or(0);
+        let next = (last + 1) % self.list.len();
+        self.last = Some(next);
+        self.list[next].clone()
+    }
+}
+
+pub fn setup_high_config(mut commands: Commands, assets: Res<AIAudioAssets>) {
+    commands.insert_resource(AIHighConfig {
+        list: vec![
+            assets.high_1.clone(),
+            assets.high_2.clone(),
+            assets.high_3.clone(),
+        ],
+        last: None,
     });
 }

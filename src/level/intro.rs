@@ -24,8 +24,6 @@ pub fn setup(mut commands: Commands, mut camera_query: Query<&mut Transform, Wit
     camera_trans.translation = vec3(-1.0, 1.7, -3.0);
     camera_trans.look_at(vec3(-1.0, 1.5, 0.0), Vec3::Y);
 
-
-    
     commands
         .spawn_bundle(SpatialBundle {
             transform: Transform::from_xyz(2.0, 2.0, 0.0),
@@ -33,9 +31,8 @@ pub fn setup(mut commands: Commands, mut camera_query: Query<&mut Transform, Wit
         })
         .insert(Pellet {
             value: 0.0,
+            ..default()
         });
-        
-
 
     commands
         .spawn_bundle(SpatialBundle {
@@ -112,7 +109,7 @@ pub fn setup(mut commands: Commands, mut camera_query: Query<&mut Transform, Wit
         })
         .insert(SpaceKit::Barrel(Barrel::Rail));
 
-        commands
+    commands
         .spawn_bundle(SpatialBundle {
             transform: Transform::from_xyz(6.0, 0.0, -3.0),
             ..default()

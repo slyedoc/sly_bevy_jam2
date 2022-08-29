@@ -27,6 +27,7 @@ impl Plugin for AIPlugin {
             .add_event::<AIAnnoyEvent>()
             .add_enter_system(GameState::Playing, setup_annoy_config)
             .add_enter_system(GameState::Playing, setup_intro_config)
+            .add_enter_system(GameState::Playing, setup_high_config)
             .add_system(advance_intro.run_in_state(GameState::Playing))
             .add_system(spawn_ai.run_in_state(GameState::Playing))
             .add_system(interaction_check.run_in_state(GameState::Playing));
@@ -179,7 +180,7 @@ fn advance_intro(
         // hack to skip
         if keyboard_input.just_pressed(KeyCode::S) && keyboard_input.pressed(KeyCode::LAlt) {
             channel.stop();
-            
+
             camera_config.disable_look = false;
             camera_config.disable_movement = false;
 
@@ -190,22 +191,21 @@ fn advance_intro(
             }
 
             // enable switch
-            let mut s = switch_query.single_mut();
-            s.state = SwitchState::Enabled;
-            
+            for mut s in switch_query.iter_mut() {
+                s.state = SwitchState::Enabled;
+            }
+
             intro_config.step = 12;
         }
 
         intro_timer.0.tick(time.delta());
-        if intro_timer.0.finished() {
-            if !*paused {
-                if let Some(handle) = intro_config.next() {
-                    let source = audio_sources.get(&handle).unwrap();
-                    let time = source.sound.duration() + Duration::from_secs_f32(1.0);
-                    intro_timer.0 = Timer::new(time, false);
+        if intro_timer.0.finished() && !*paused {
+            if let Some(handle) = intro_config.next() {
+                let source = audio_sources.get(&handle).unwrap();
+                let time = source.sound.duration() + Duration::from_secs_f32(1.0);
+                intro_timer.0 = Timer::new(time, false);
 
-                    channel.play(handle).with_volume(0.4);
-                }
+                channel.play(handle).with_volume(0.4);
             }
         }
 
@@ -239,11 +239,11 @@ fn advance_intro(
                     *paused = false;
                 }
             }
-
             9 => {
                 // enable switch
-                let mut s = switch_query.single_mut();
-                s.state = SwitchState::Enabled;
+                for mut s in switch_query.iter_mut() {
+                    s.state = SwitchState::Enabled;
+                }
             }
             11 => {
                 // enable annoy mode
@@ -254,6 +254,7 @@ fn advance_intro(
     }
 }
 
+#[allow(clippy::single_match)]
 fn interaction_check(
     mut query: Query<(&AI, &CursorInteraction, &mut InteractionTime)>,
     mut annoy_config: ResMut<AIAnnoyConfig>,

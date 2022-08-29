@@ -33,7 +33,10 @@ impl Plugin for SwitchPlugin {
             .add_event::<SwitchEvent>()
             .add_audio_channel::<SwitchAudioChannel>()
             .add_system(spawn_switch)
-            .add_system_to_stage(CoreStage::PostUpdate, interaction_check.run_in_state(GameState::Playing));
+            .add_system_to_stage(
+                CoreStage::PostUpdate,
+                interaction_check.run_in_state(GameState::Playing),
+            );
     }
 }
 
@@ -183,7 +186,7 @@ fn interaction_check(
                         // send event to target
                         switch_events.send(SwitchEvent(switch.target));
                     }
-                    SwitchState::Disabled => {},
+                    SwitchState::Disabled => {}
                 }
             }
             CursorInteraction::Hovered => {

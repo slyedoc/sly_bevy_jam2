@@ -1,19 +1,19 @@
-mod door;
 mod ai;
+mod dispenser;
+mod door;
+mod pellet;
 mod polarity_blaster;
+mod reactor;
 mod rooms;
 mod space_kit;
 mod switch;
-mod pellet;
-mod despencer;
-mod reactor;
 
-pub use reactor::*;
-pub use despencer::*;
-pub use door::*;
 pub use ai::*;
+pub use dispenser::*;
+pub use door::*;
 pub use pellet::*;
 pub use polarity_blaster::*;
+pub use reactor::*;
 pub use rooms::*;
 pub use space_kit::*;
 pub use switch::*;
@@ -31,7 +31,7 @@ impl Plugin for PrefabPlugin {
             .add_plugin(RoomPlugin)
             .add_plugin(PolarityBlasterPlugin)
             .add_plugin(PelletPlugin)
-            .add_plugin(DespencerPlugin)
+            .add_plugin(DispenserPlugin)
             .add_plugin(ReactorPlugin);
     }
 }

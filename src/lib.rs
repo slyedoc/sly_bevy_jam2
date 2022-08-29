@@ -1,6 +1,7 @@
 // for jam we dont care about these
 #![allow(clippy::type_complexity)]
 #![allow(dead_code)]
+#![allow(clippy::too_many_arguments)]
 
 mod assets;
 mod camera;
@@ -9,10 +10,7 @@ mod debug;
 mod level;
 mod prefabs;
 mod states;
-mod lines;
 
-//use crate::actions::ActionsPlugin;
-//use crate::audio::InternalAudioPlugin;
 use crate::states::*;
 use assets::ButtonColors;
 use bevy::prelude::*;
@@ -26,7 +24,6 @@ use cursor::CursorPlugin;
 use debug::DebugPlugin;
 use iyes_loopless::prelude::*;
 use level::LevelPlugin;
-use lines::LineMaterial;
 use prefabs::PrefabPlugin;
 use sly_physics::prelude::*;
 
@@ -56,7 +53,6 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(GameState::PreLoading)
             .add_loopless_state(LevelState::None)
-
             .add_plugin(WorldInspectorPlugin::default())
             .insert_resource(WorldInspectorParams {
                 enabled: false,
@@ -66,19 +62,15 @@ impl Plugin for GamePlugin {
             .add_plugin(TweeningPlugin)
             .add_plugin(AudioPlugin)
             .add_plugin(OutlinePlugin)
-            .add_plugin(MaterialPlugin::<LineMaterial>::default())
-
             // physics plugins
             .add_plugin(PhysicsPlugin)
-            .add_plugin(GravityPlugin)
+            //.add_plugin(GravityPlugin)
             .add_plugin(PhysicsDebugPlugin)
             .add_plugin(PhysicsBvhCameraPlugin)
             // local plugins
             .add_plugin(CameraPlugin)
             .add_plugin(CursorPlugin)
             .add_plugin(PrefabPlugin)
-            //.add_plugin(ActionsPlugin)
-            //.add_plugin(InternalAudioPlugin)
             // game states
             .add_plugin(StatePlugin)
             .add_plugin(LevelPlugin)

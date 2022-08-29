@@ -630,9 +630,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_mod_outline"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76c166415837ecceae65abf0eb092d301a167d4880514fc941cccdd0dc59e1e8"
+checksum = "cfe4cebee65c6d134b68925defd431c6130c461d189db861701d38f7deb882c4"
 dependencies = [
  "bevy",
  "thiserror",
@@ -2183,9 +2183,9 @@ dependencies = [
 
 [[package]]
 name = "lock_api"
-version = "0.4.7"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "327fa5b6a6940e4699ec49a9beae1ea4845c6bab9314e4f84ac68742139d8c53"
+checksum = "9f80bf5aacaf25cbfc8210d1cfb718f2bf3b11c4c54e5afe36c236853a8ec390"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -3112,6 +3112,7 @@ dependencies = [
 [[package]]
 name = "sly_physics"
 version = "0.1.0"
+source = "git+https://github.com/slyedoc/sly_physics?branch=main#b10a0a1835e58b346699c0d1a34627c214ce0a92"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",

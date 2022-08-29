@@ -13,7 +13,7 @@ use sly_physics::prelude::*;
 
 use crate::{
     assets::{TextureAssets, CLEAR},
-    prefabs::{RoomConfig},
+    prefabs::RoomConfig,
     GameState, Keep,
 };
 
@@ -53,7 +53,7 @@ fn set_camera_static(mut commands: Commands) {
 fn setup_player_camera(
     mut commands: Commands,
     mut windows: ResMut<Windows>,
-    texture_assets: Res<TextureAssets>
+    texture_assets: Res<TextureAssets>,
 ) {
     if let Some(window) = windows.get_primary_mut() {
         window.set_cursor_lock_mode(true);
@@ -66,8 +66,8 @@ fn setup_player_camera(
                 position_type: PositionType::Absolute,
                 size: Size::new(Val::Percent(20.0), Val::Percent(20.0)),
                 position: UiRect::<Val> {
-                    top:  Val::Percent(40.0),                                         
-                    left: Val::Percent(40.0),                                        
+                    top: Val::Percent(40.0),
+                    left: Val::Percent(40.0),
                     ..default()
                 },
                 justify_content: JustifyContent::Center,
@@ -300,8 +300,8 @@ impl Default for CameraPlayerConfig {
         CameraPlayerConfig {
             disable_movement: false,
             disable_look: false,
-            height: 1.0,
-            sensitivity: 0.2,
+            height: 1.7,
+            sensitivity: 0.1,
             key_forward: KeyCode::W,
             key_back: KeyCode::S,
             key_left: KeyCode::A,

@@ -79,8 +79,12 @@ pub struct TextureAssets {
     #[asset(path = "textures/bevy.png")]
     pub texture_bevy: Handle<Image>,
 
-    #[asset(path = "textures/pattern_01.png")]
-    pub pattern_01: Handle<Image>,
+    #[asset(path = "textures/pattern_74.png")]
+    pub pattern_74: Handle<Image>,
+
+    #[asset(path = "textures/pattern_78.png")]
+    pub pattern_78: Handle<Image>,
+   
 }
 
 #[derive(AssetCollection)]
@@ -115,7 +119,6 @@ pub struct AIAudioAssets {
     #[asset(path = "audio/ai/intro_10.ogg")]
     pub intro_10: Handle<AudioSource>,
 
-
     #[asset(path = "audio/ai/intro_check_2.ogg")]
     pub intro_check_2: Handle<AudioSource>,
 
@@ -130,6 +133,18 @@ pub struct AIAudioAssets {
 
     #[asset(path = "audio/ai/whats_wrong_with_you.ogg")]
     pub annoyed2: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/high_1.ogg")]
+    pub high_1: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/high_2.ogg")]
+    pub high_2: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/high_3.ogg")]
+    pub high_3: Handle<AudioSource>,
+
+    #[asset(path = "audio/ai/start.ogg")]
+    pub start: Handle<AudioSource>,
 }
 
 #[derive(AssetCollection)]
@@ -200,4 +215,34 @@ pub struct SpaceKitAssets {
 
     #[asset(path = "spacekit/weapon_blasterR.glb")]
     pub weapon_blaster_r_gltf: Handle<Gltf>,
+
+    #[asset(path = "spacekit/rocket_baseA.glb#Scene0")]
+    pub rocket_base_a: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_baseB.glb#Scene0")]
+    pub rocket_base_b: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_finsA.glb#Scene0")]
+    pub rocket_fins_a: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_finsB.glb#Scene0")]
+    pub rocket_fins_b: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_fuelA.glb#Scene0")]
+    pub rocket_fuel_a: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_fuelB.glb#Scene0")]
+    pub rocket_fuel_b: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_sidesA.glb#Scene0")]
+    pub rocket_sides_a: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_sidesB.glb#Scene0")]
+    pub rocket_sides_b: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_topA.glb#Scene0")]
+    pub rocket_top_a: Handle<Scene>,
+
+    #[asset(path = "spacekit/rocket_topB.glb#Scene0")]
+    pub rocket_top_b: Handle<Scene>,
 }

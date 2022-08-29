@@ -10,7 +10,7 @@ use super::Keep;
 
 pub struct CursorPlugin;
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub enum CursorInteraction {
     /// The node has been clicked
     Clicked,
@@ -63,7 +63,7 @@ impl Default for CursorConfig {
             hover: Color::LIME_GREEN,
             clicked: Color::GREEN,
             disabled: Color::RED,
-            width: 10.0,
+            width: 5.0,
         }
     }
 }
@@ -132,6 +132,7 @@ fn cursor_raycast(
             if let Some(hit) = ray.intersect_tlas(&tlas) {
                 cursor_trans.translation = ray.origin + ray.direction * hit.distance;
                 cursor_vis.is_visible = true;
+
                 interaction_event.send(CursorEvent(hit.entity));
             } else {
                 cursor_vis.is_visible = false;
@@ -164,10 +165,7 @@ pub fn clear_interactions(mut query: Query<(&mut CursorInteraction, Option<&mut 
 
 pub fn interaction_check(
     mut cursor_events: EventReader<CursorEvent>,
-    mut query: Query<(
-        &mut CursorInteraction,
-        Option<&InteractionTime>,
-    )>,
+    mut query: Query<(&mut CursorInteraction, Option<&InteractionTime>)>,
     mouse_input: Res<Input<MouseButton>>,
     mut inspector: ResMut<Inspector>,
 ) {
@@ -175,8 +173,7 @@ pub fn interaction_check(
         let mut clicked = mouse_input.just_pressed(MouseButton::Left);
 
         // see if the entity is interactable
-        if let Ok((mut interaction, interaction_time_maybe)) = query.get_mut(event.0)
-        {
+        if let Ok((mut interaction, interaction_time_maybe)) = query.get_mut(event.0) {
             // ignore click if timer is active
             if let Some(interaction_time) = interaction_time_maybe {
                 if !interaction_time.timer.finished() {
@@ -187,11 +184,9 @@ pub fn interaction_check(
             if clicked {
                 inspector.active = Some(event.0);
                 *interaction = CursorInteraction::Clicked;
-
             } else {
                 inspector.active = None;
                 *interaction = CursorInteraction::Hovered;
-
             }
         }
     }
