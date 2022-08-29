@@ -103,7 +103,7 @@ fn setup(mut commands: Commands, font_assets: Res<FontAssets>, button_colors: Re
                         top: Val::Px(2.0),
                         left: Val::Px(2.0),
                         right: Val::Px(2.0),
-                        bottom: Val::Px(2.0),                        
+                        bottom: Val::Px(2.0),
                     },
                     ..default()
                 },
