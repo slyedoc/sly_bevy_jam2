@@ -1,6 +1,6 @@
 [package]
 name = "reactor" # ToDo
-version = "0.1.0"
+version = "0.2.0"
 publish = false
 authors = ["Patrick Towles <james.towles@gmail.com>"] 
 edition = "2021"
