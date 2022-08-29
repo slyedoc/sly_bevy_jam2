@@ -11,8 +11,6 @@ pub struct PlayingPlugin;
 #[derive(Component)]
 pub struct ScoreText;
 
-
-
 #[derive(Component, Default)]
 pub struct Score(pub u32);
 
@@ -25,11 +23,9 @@ pub struct HighScore(pub u32);
 #[derive(Component)]
 pub struct TimeText;
 
-
 impl Plugin for PlayingPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<Score>()
+        app.init_resource::<Score>()
             .init_resource::<HighScore>()
             .add_enter_system(GameState::Playing, setup)
             .add_system(hotkeys.run_in_state(GameState::Playing))
@@ -41,10 +37,7 @@ impl Plugin for PlayingPlugin {
     }
 }
 
-fn update_score_text(        
-    mut score_query: Query<&mut Text, With<ScoreText>>,    
-    score: Res<Score>,
-) {
+fn update_score_text(mut score_query: Query<&mut Text, With<ScoreText>>, score: Res<Score>) {
     for mut text in score_query.iter_mut() {
         text.sections[1].value = score.0.to_string();
     }
@@ -59,19 +52,15 @@ fn update_high_score_text(
     }
 }
 
-fn update_time_text(
-    mut time_query: Query<&mut Text, With<TimeText>>,
-    game_time: Res<GameTimer>,
-) {
+fn update_time_text(mut time_query: Query<&mut Text, With<TimeText>>, game_time: Res<GameTimer>) {
     for mut text in time_query.iter_mut() {
-        
         let seconds = game_time.0.duration().as_secs_f32() - game_time.0.elapsed().as_secs_f32();
 
         text.sections[1].value = format!("{:.0}", seconds);
         text.sections[1].style.color = match seconds as u32 {
-            0..=10 => Color::RED,            
+            0..=10 => Color::RED,
             _ => Color::GOLD,
-        };        
+        };
     }
 }
 
@@ -88,11 +77,7 @@ impl From<PlayingButton> for String {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    font_assets: Res<FontAssets>,
-    button_colors: Res<ButtonColors>,
-) {
+fn setup(mut commands: Commands, font_assets: Res<FontAssets>, button_colors: Res<ButtonColors>) {
     commands
         .spawn_bundle(ButtonBundle {
             style: Style {
@@ -100,10 +85,10 @@ fn setup(
                 size: Size::new(Val::Px(50.0), Val::Px(50.0)),
                 position: UiRect::<Val> {
                     top: Val::Px(10.0),
-                    left: Val::Px(10.0),                    
+                    left: Val::Px(10.0),
                     ..default()
                 },
-              
+
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
                 ..Default::default()
@@ -118,8 +103,7 @@ fn setup(
                         top: Val::Px(2.0),
                         left: Val::Px(2.0),
                         right: Val::Px(2.0),
-                        bottom: Val::Px(2.0),
-                        ..default()
+                        bottom: Val::Px(2.0),                        
                     },
                     ..default()
                 },
@@ -180,8 +164,7 @@ fn setup(
         })
         .insert(Name::new("ui Skip helper"));
 
-
-        commands
+    commands
         .spawn_bundle(TextBundle {
             style: Style {
                 position_type: PositionType::Absolute,
@@ -196,7 +179,7 @@ fn setup(
             text: Text {
                 sections: vec![
                     font_assets.h1("Score: ".into(), Color::WHITE),
-                    font_assets.h1("".into(), Color::GOLD)
+                    font_assets.h1("".into(), Color::GOLD),
                 ],
                 ..Default::default()
             },
@@ -205,7 +188,7 @@ fn setup(
         .insert(Name::new("ui Score"))
         .insert(ScoreText);
 
-        commands
+    commands
         .spawn_bundle(TextBundle {
             style: Style {
                 position_type: PositionType::Absolute,
@@ -220,7 +203,7 @@ fn setup(
             text: Text {
                 sections: vec![
                     font_assets.h1("High Score: ".into(), Color::WHITE),
-                    font_assets.h1("".into(), Color::GOLD)
+                    font_assets.h1("".into(), Color::GOLD),
                 ],
                 ..Default::default()
             },
@@ -229,7 +212,7 @@ fn setup(
         .insert(Name::new("ui High Score"))
         .insert(HighScoreText);
 
-        commands
+    commands
         .spawn_bundle(TextBundle {
             style: Style {
                 position_type: PositionType::Absolute,
@@ -244,7 +227,7 @@ fn setup(
             text: Text {
                 sections: vec![
                     font_assets.h1("Time: ".into(), Color::WHITE),
-                    font_assets.h1("".into(), Color::GOLD)
+                    font_assets.h1("".into(), Color::GOLD),
                 ],
                 ..Default::default()
             },

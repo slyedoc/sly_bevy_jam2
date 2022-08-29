@@ -19,81 +19,75 @@ fn spawn_spacekit(
     space_kit: Res<SpaceKitAssets>,
 ) {
     for (e, kit, name_maybe) in query.iter() {
-
         if name_maybe.is_none() {
-            commands
-            .entity(e)
-            .insert(Name::new(format!("{:?}", kit)));
+            commands.entity(e).insert(Name::new(format!("{:?}", kit)));
         }
-        
 
-        commands
-            .entity(e)
-            .insert(match kit {
-                SpaceKit::Character(a) => match a {
-                    Character::Alien => space_kit.alien.clone(),
-                    Character::AstronautA => space_kit.astronaut_a.clone(),
-                    Character::AstronautB => space_kit.astronaut_b.clone(),
-                },
-                SpaceKit::Barrel(a) => match a {
-                    Barrel::Normal => space_kit.barrel.clone(),
-                    Barrel::Multiple => space_kit.barrels.clone(),
-                    Barrel::Rail => space_kit.barrels_rail.clone(),
-                },
-                SpaceKit::Bones => space_kit.bones.clone(),
-                SpaceKit::Chimney(_) => todo!(),
-                SpaceKit::Corridor(_) => todo!(),
-                SpaceKit::Craft(_) => todo!(),
-                SpaceKit::Crater(_) => todo!(),
-                SpaceKit::Desk(a) => match a {
-                    Desk::Chair => space_kit.desk_chair.clone(),
-                    Desk::ChairArms => space_kit.desk_chair_arms.clone(),
-                    Desk::ChairStool => space_kit.desk_chair_stool.clone(),
-                    Desk::Computer => space_kit.desk_computer.clone(),
-                    Desk::ComputerCorner => space_kit.desk_computer_corner.clone(),
-                    Desk::ComputerScreen => space_kit.desk_computer_screen.clone(),
-                },
-                SpaceKit::Gate(_) => todo!(),
-                SpaceKit::Hanger(_) => todo!(),
-                SpaceKit::Machine(a) => match a {
-                    Machine::Barrel => space_kit.machine_barrel.clone(),
-                    Machine::BarrelLarge => space_kit.machine_barrel_large.clone(),
-                    Machine::Generator => space_kit.machine_generator.clone(),
-                    Machine::GeneratorLarge => space_kit.machine_generator_large.clone(),
-                    Machine::Wireless => space_kit.machine_wireless.clone(),
-                    Machine::WirelessCable => space_kit.machine_wireless_cable.clone(),
-                },
-                SpaceKit::Meteor(_) => todo!(),
-                SpaceKit::Monorail(_) => todo!(),
-                SpaceKit::Pipe(_) => todo!(),
-                SpaceKit::Platform(_) => todo!(),
-                SpaceKit::Rail(_) => todo!(),
-                SpaceKit::Rock(_) => todo!(),
-                SpaceKit::Rocket(a) => match a {
-                    Rocket::BaseA => space_kit.rocket_base_a.clone(),
-                    Rocket::BaseB => space_kit.rocket_base_b.clone(),
-                    Rocket::FinsA => space_kit.rocket_fins_a.clone(),
-                    Rocket::FinsB => space_kit.rocket_fins_b.clone(),
-                    Rocket::FuelA => space_kit.rocket_fuel_a.clone(),
-                    Rocket::FuelB => space_kit.rocket_fuel_b.clone(),
-                    Rocket::SidesA => space_kit.rocket_sides_a.clone(),
-                    Rocket::SidesB => space_kit.rocket_sides_b.clone(),
-                    Rocket::TopA => space_kit.rocket_top_a.clone(),
-                    Rocket::TopB => space_kit.rocket_top_b.clone(),
-                },
-                SpaceKit::Stairs(_) => todo!(),
-                SpaceKit::SatelliteDish(_) => todo!(),
-                SpaceKit::Supports(_) => todo!(),
-                SpaceKit::Structure(_) => todo!(),
-                SpaceKit::Terrain(_) => todo!(),
-                SpaceKit::Turret(_) => todo!(),
-                SpaceKit::Weapon(a) => match a {
-                    Weapon::Gun => space_kit.weapon_gun.clone(),
-                    Weapon::Rifle => space_kit.weapon_rifle.clone(),
-                    Weapon::BlasterR => space_kit.weapon_blaster_r.clone(),
-                },
-                SpaceKit::Rover => todo!(),
-            });
+        commands.entity(e).insert(match kit {
+            SpaceKit::Character(a) => match a {
+                Character::Alien => space_kit.alien.clone(),
+                Character::AstronautA => space_kit.astronaut_a.clone(),
+                Character::AstronautB => space_kit.astronaut_b.clone(),
+            },
+            SpaceKit::Barrel(a) => match a {
+                Barrel::Normal => space_kit.barrel.clone(),
+                Barrel::Multiple => space_kit.barrels.clone(),
+                Barrel::Rail => space_kit.barrels_rail.clone(),
+            },
+            SpaceKit::Bones => space_kit.bones.clone(),
+            SpaceKit::Chimney(_) => todo!(),
+            SpaceKit::Corridor(_) => todo!(),
+            SpaceKit::Craft(_) => todo!(),
+            SpaceKit::Crater(_) => todo!(),
+            SpaceKit::Desk(a) => match a {
+                Desk::Chair => space_kit.desk_chair.clone(),
+                Desk::ChairArms => space_kit.desk_chair_arms.clone(),
+                Desk::ChairStool => space_kit.desk_chair_stool.clone(),
+                Desk::Computer => space_kit.desk_computer.clone(),
+                Desk::ComputerCorner => space_kit.desk_computer_corner.clone(),
+                Desk::ComputerScreen => space_kit.desk_computer_screen.clone(),
+            },
+            SpaceKit::Gate(_) => todo!(),
+            SpaceKit::Hanger(_) => todo!(),
+            SpaceKit::Machine(a) => match a {
+                Machine::Barrel => space_kit.machine_barrel.clone(),
+                Machine::BarrelLarge => space_kit.machine_barrel_large.clone(),
+                Machine::Generator => space_kit.machine_generator.clone(),
+                Machine::GeneratorLarge => space_kit.machine_generator_large.clone(),
+                Machine::Wireless => space_kit.machine_wireless.clone(),
+                Machine::WirelessCable => space_kit.machine_wireless_cable.clone(),
+            },
+            SpaceKit::Meteor(_) => todo!(),
+            SpaceKit::Monorail(_) => todo!(),
+            SpaceKit::Pipe(_) => todo!(),
+            SpaceKit::Platform(_) => todo!(),
+            SpaceKit::Rail(_) => todo!(),
+            SpaceKit::Rock(_) => todo!(),
+            SpaceKit::Rocket(a) => match a {
+                Rocket::BaseA => space_kit.rocket_base_a.clone(),
+                Rocket::BaseB => space_kit.rocket_base_b.clone(),
+                Rocket::FinsA => space_kit.rocket_fins_a.clone(),
+                Rocket::FinsB => space_kit.rocket_fins_b.clone(),
+                Rocket::FuelA => space_kit.rocket_fuel_a.clone(),
+                Rocket::FuelB => space_kit.rocket_fuel_b.clone(),
+                Rocket::SidesA => space_kit.rocket_sides_a.clone(),
+                Rocket::SidesB => space_kit.rocket_sides_b.clone(),
+                Rocket::TopA => space_kit.rocket_top_a.clone(),
+                Rocket::TopB => space_kit.rocket_top_b.clone(),
+            },
+            SpaceKit::Stairs(_) => todo!(),
+            SpaceKit::SatelliteDish(_) => todo!(),
+            SpaceKit::Supports(_) => todo!(),
+            SpaceKit::Structure(_) => todo!(),
+            SpaceKit::Terrain(_) => todo!(),
+            SpaceKit::Turret(_) => todo!(),
+            SpaceKit::Weapon(a) => match a {
+                Weapon::Gun => space_kit.weapon_gun.clone(),
+                Weapon::Rifle => space_kit.weapon_rifle.clone(),
+                Weapon::BlasterR => space_kit.weapon_blaster_r.clone(),
+            },
+            SpaceKit::Rover => todo!(),
+        });
     }
 }
 

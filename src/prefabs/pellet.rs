@@ -1,5 +1,5 @@
-use crate::{GameState};
-use bevy::{prelude::*, math::vec3};
+use crate::GameState;
+use bevy::{math::vec3, prelude::*};
 use bevy_inspector_egui::prelude::*;
 use bevy_mod_outline::{Outline, OutlineMeshExt};
 use iyes_loopless::prelude::*;
@@ -17,7 +17,6 @@ impl Plugin for PelletPlugin {
             )
             .add_system_to_stage(CoreStage::First, clear_hit.run_in_state(GameState::Playing))
             .register_inspectable::<Pellet>();
-
     }
 }
 
@@ -28,14 +27,19 @@ fn clear_hit(mut query: Query<&mut Pellet>) {
 }
 
 fn update_pellet(
-    mut query: Query<(&Pellet, &mut Outline, &mut LinearVelocity, &Handle<StandardMaterial>)>,
+    mut query: Query<(
+        &Pellet,
+        &mut Outline,
+        &mut LinearVelocity,
+        &Handle<StandardMaterial>,
+    )>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     pellet_config: Res<PelletConfig>,
 ) {
     for (pellet, mut outline, mut lin_vel, material_handle) in query.iter_mut() {
         let mat = materials.get_mut(material_handle).unwrap();
         mat.base_color = pellet.color();
-         
+
         if (pellet.value - 0.5).abs() < pellet_config.allow_range {
             outline.colour = Color::GREEN;
         } else {
@@ -75,7 +79,6 @@ impl FromWorld for PelletConfig {
         let collider = collider_resources.add_sphere(radius);
 
         Self {
-            
             radius,
             allow_range: 0.1,
             mesh: mesh_handle,
@@ -102,7 +105,6 @@ impl Default for Pellet {
 impl Pellet {
     // lerp between blue and yellow based on value
     pub fn color(&self) -> Color {
-        
         let blue = vec3(0.0, 0.0, 1.0);
         let yellow = vec3(1.0, 1.0, 0.0);
         let green = vec3(0.0, 1.0, 0.0);
@@ -112,10 +114,8 @@ impl Pellet {
         } else {
             green.lerp(yellow, (self.value - 0.5) * 2.0)
         };
-        
-         Color::rgb(result.x, result.y, result.z)
 
-        
+        Color::rgb(result.x, result.y, result.z)
     }
 }
 

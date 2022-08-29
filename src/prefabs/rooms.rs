@@ -25,9 +25,8 @@ impl Plugin for RoomPlugin {
 fn add_wall_textures(
     texture_assets: Res<TextureAssets>,
     wall_config: Res<WallConfig>,
-    mut materials: ResMut<Assets<StandardMaterial>>
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-
     if let Some(mut mat) = materials.get_mut(&wall_config.reactor_mat) {
         mat.base_color_texture = Some(texture_assets.pattern_74.clone());
     }
@@ -91,7 +90,7 @@ pub fn spawn_training_room(
     // floor
     commands
         .spawn_bundle(PbrBundle {
-            transform: Transform { 
+            transform: Transform {
                 translation: vec3(0.0, -room_config.half_thinkess, 0.0),
                 ..default()
             },
@@ -101,7 +100,7 @@ pub fn spawn_training_room(
                 room_config.intro_floor_size,
             ))),
             material: materials.add(StandardMaterial {
-                base_color: Color::GRAY,                
+                base_color: Color::GRAY,
                 ..default()
             }),
             ..default()
@@ -273,7 +272,7 @@ pub fn spawn_reactor_room(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut collider_resources: ResMut<ColliderResources>,
     room_config: Res<RoomConfig>,
-    texture_assets: Res<TextureAssets>
+    texture_assets: Res<TextureAssets>,
 ) {
     let landing_offset = room_config.intro_floor_size * 0.5;
 
@@ -323,7 +322,7 @@ pub fn spawn_reactor_room(
             material: materials.add(StandardMaterial {
                 base_color: Color::GRAY,
                 base_color_texture: Some(texture_assets.pattern_78.clone()),
-                reflectance: 0.1,                
+                reflectance: 0.1,
                 ..default()
             }),
             ..default()
@@ -538,7 +537,6 @@ pub struct WallConfig {
     pub thickness: f32,
     wall_mat: Handle<StandardMaterial>,
     reactor_mat: Handle<StandardMaterial>,
-
 }
 
 impl FromWorld for WallConfig {

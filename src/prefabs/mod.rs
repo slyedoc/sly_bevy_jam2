@@ -8,12 +8,12 @@ mod rooms;
 mod space_kit;
 mod switch;
 
+pub use self::reactor::*;
 pub use ai::*;
 pub use dispenser::*;
 pub use door::*;
 pub use pellet::*;
 pub use polarity_blaster::*;
-pub use reactor::*;
 pub use rooms::*;
 pub use space_kit::*;
 pub use switch::*;

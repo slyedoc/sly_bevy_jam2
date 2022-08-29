@@ -1,7 +1,11 @@
 use std::{ops::Range, time::Duration};
 
-use super::{space_kit::*, Pellet, PelletConfig, SwitchEvent, AIAudioChannel, AIHighConfig};
-use crate::{assets::{CLEAR, AIAudioAssets}, GameState, states::{Score, HighScore, GameTimer}};
+use super::{space_kit::*, AIAudioChannel, AIHighConfig, Pellet, PelletConfig, SwitchEvent};
+use crate::{
+    assets::{AIAudioAssets, CLEAR},
+    states::{GameTimer, HighScore, Score},
+    GameState,
+};
 use bevy::{math::vec3, prelude::*};
 use bevy_kira_audio::{AudioChannel, AudioControl};
 use bevy_mod_outline::{Outline, OutlineBundle};
@@ -13,12 +17,11 @@ pub struct DispenserPlugin;
 
 impl Plugin for DispenserPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .init_resource::<GameTimer>()
+        app.init_resource::<GameTimer>()
             .add_system(spawn_dispenser.run_in_state(GameState::Playing))
             .add_system(switch_event.run_in_state(GameState::Playing))
             .add_system(dispense_pellets.run_in_state(GameState::Playing))
-            .add_system(update_game_timer.run_in_state(GameState::Playing));            
+            .add_system(update_game_timer.run_in_state(GameState::Playing));
     }
 }
 
@@ -52,29 +55,24 @@ fn spawn_dispenser(mut commands: Commands, query: Query<Entity, Added<Dispenser>
     }
 }
 
-
 fn update_game_timer(
     mut commands: Commands,
     mut game_timer: ResMut<GameTimer>,
     time: Res<Time>,
     mut score: ResMut<Score>,
     mut high_score: ResMut<HighScore>,
-    pellet_query: Query<Entity, With<Pellet>>,  
+    pellet_query: Query<Entity, With<Pellet>>,
     mut high_config: ResMut<AIHighConfig>,
     channel: Res<AudioChannel<AIAudioChannel>>,
-) {    
+) {
     game_timer.0.tick(time.delta());
 
     if game_timer.0.just_finished() {
-
         if score.0 > high_score.0 {
-         
             let handle = high_config.next();
             channel.play(handle).with_volume(0.4);
         }
         reset(&mut score, &mut high_score, &pellet_query, &mut commands);
-
-
     }
 }
 
@@ -84,7 +82,7 @@ fn switch_event(
     mut dispenser_query: Query<&mut Dispenser>,
     mut score: ResMut<Score>,
     mut high_score: ResMut<HighScore>,
-    pellet_query: Query<Entity, With<Pellet>>,    
+    pellet_query: Query<Entity, With<Pellet>>,
     channel: Res<AudioChannel<AIAudioChannel>>,
     audio_assets: Res<AIAudioAssets>,
     mut game_timer: ResMut<GameTimer>,
@@ -92,8 +90,7 @@ fn switch_event(
     for switch_event in switch_events.iter() {
         let dispenser_entity = switch_event.0;
         if let Ok(mut dispenser) = dispenser_query.get_mut(dispenser_entity) {
-
-            info!("start" );
+            info!("start");
             // start timer
             game_timer.0.set_duration(Duration::from_secs(30));
             game_timer.0.reset();
@@ -107,7 +104,12 @@ fn switch_event(
     }
 }
 
-fn reset(score: &mut Score, high_score: &mut HighScore, pellet_query: &Query<Entity, With<Pellet>>, commands: &mut Commands) {
+fn reset(
+    score: &mut Score,
+    high_score: &mut HighScore,
+    pellet_query: &Query<Entity, With<Pellet>>,
+    commands: &mut Commands,
+) {
     // save high score
     if score.0 > high_score.0 {
         high_score.0 = score.0;
@@ -128,7 +130,6 @@ fn dispense_pellets(
     mut materials: ResMut<Assets<StandardMaterial>>,
     time: Res<Time>,
 ) {
-
     let mut rng = rand::thread_rng();
 
     for (mut dispenser, dispenser_trans) in query.iter_mut() {
@@ -156,14 +157,14 @@ fn dispense_pellets(
                     mass: Mass(1.0),
                     linear_velocity: LinearVelocity(vec3(
                         rng.gen_range(dispenser.pellet_velocity.clone()),
-                         rng.gen_range(dispenser.pellet_direction.clone()),
-                         rng.gen_range(dispenser.pellet_direction.clone())
-                        )),
+                        rng.gen_range(dispenser.pellet_direction.clone()),
+                        rng.gen_range(dispenser.pellet_direction.clone()),
+                    )),
                     ..default()
                 })
                 .insert_bundle(OutlineBundle {
                     outline: Outline {
-                        visible: true,             
+                        visible: true,
                         width: 2.0,
                         ..default()
                     },
@@ -173,7 +174,7 @@ fn dispense_pellets(
                     value: match rng.gen::<bool>() {
                         true => 0.0,
                         false => 1.0,
-                    },                    
+                    },
                     ..default()
                 })
                 .insert(Name::new("Pellet"));

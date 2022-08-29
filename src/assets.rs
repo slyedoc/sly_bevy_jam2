@@ -84,7 +84,6 @@ pub struct TextureAssets {
 
     #[asset(path = "textures/pattern_78.png")]
     pub pattern_78: Handle<Image>,
-   
 }
 
 #[derive(AssetCollection)]

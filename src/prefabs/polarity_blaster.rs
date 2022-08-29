@@ -13,7 +13,8 @@ use crate::{
     assets::SpaceKitAssets,
     camera::{CameraMain, CameraState},
     cursor::*,
-    GameState, states::Score,
+    states::Score,
+    GameState,
 };
 
 use super::{Pellet, PelletConfig};
@@ -97,7 +98,6 @@ impl FromWorld for PolarityBlasterConfig {
 #[derive(Component)]
 pub struct Laser;
 
-
 #[derive(PartialEq, Eq)]
 enum HitType {
     None,
@@ -123,7 +123,6 @@ pub fn fire_blaster(
         let mut hit_type = HitType::None;
         if mouse_input.pressed(MouseButton::Left) && !mouse_input.pressed(MouseButton::Right) {
             hit_type = HitType::Blue;
-            
         } else if mouse_input.pressed(MouseButton::Right) && !mouse_input.pressed(MouseButton::Left)
         {
             hit_type = HitType::Yellow;
@@ -145,16 +144,14 @@ pub fn fire_blaster(
             let mut ray = Ray::new(camera_trans.translation, camera_trans.forward());
             if let Some(hit) = ray.intersect_tlas(&tlas) {
                 if let Ok(mut pellet) = pellet_query.get_mut(hit.entity) {
-                    
                     let was_in_range = (pellet.value - 0.5).abs() < pellet_config.allow_range;
                     match hit_type {
-
                         HitType::Blue => {
-                            pellet.value = (pellet.value - config.hit_change).clamp(0.0, 1.0);                        
-                        },
+                            pellet.value = (pellet.value - config.hit_change).clamp(0.0, 1.0);
+                        }
                         HitType::Yellow => {
                             pellet.value = (pellet.value + config.hit_change).clamp(0.0, 1.0);
-                        },
+                        }
                         HitType::None => unreachable!(),
                     }
                     let in_range = (pellet.value - 0.5).abs() < pellet_config.allow_range;
@@ -164,7 +161,7 @@ pub fn fire_blaster(
                     if was_in_range && !in_range {
                         score.0 -= 1;
                     }
-        
+
                     pellet.hit = true;
                 }
             }

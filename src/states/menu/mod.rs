@@ -88,8 +88,10 @@ fn setup_menu(
                                 ..Default::default()
                             },
                             text: Text {
-                                sections: vec![font_assets
-                                    .sub_title("by Patrick Towles (Slyedoc)".to_string(), Color::WHITE)],
+                                sections: vec![font_assets.sub_title(
+                                    "by Patrick Towles (Slyedoc)".to_string(),
+                                    Color::WHITE,
+                                )],
                                 alignment: Default::default(),
                             },
                             ..default()
